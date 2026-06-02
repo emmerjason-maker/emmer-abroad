@@ -1,48 +1,48 @@
 /* ═══════════════════════════════════════════════════════════════
    Emmerican Adventure — Light / Dark Mode Toggle
-   Saves preference to localStorage, respects system preference
    ═══════════════════════════════════════════════════════════════ */
 
-(function() {
-  const STORAGE_KEY = 'ea-theme';
-  const root = document.documentElement;
+const STORAGE_KEY = 'ea-theme';
 
-  // ── Determine initial theme ─────────────────────────────────
-  function getInitialTheme() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
+function getTheme() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
-  // ── Apply theme to <html> ───────────────────────────────────
-  function applyTheme(theme) {
-    root.setAttribute('data-theme', theme);
-    localStorage.setItem(STORAGE_KEY, theme);
-    const btn = document.getElementById('themeToggle');
-    if (btn) {
-      btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-      btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
-    }
-  }
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(STORAGE_KEY, theme);
+  updateButtons(theme);
+}
 
-  // ── Apply immediately to avoid flash ───────────────────────
-  applyTheme(getInitialTheme());
-
-  // ── Toggle on button click ──────────────────────────────────
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('themeToggle');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const current = root.getAttribute('data-theme');
-        applyTheme(current === 'dark' ? 'light' : 'dark');
-      });
-    }
-
-    // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      if (!localStorage.getItem(STORAGE_KEY)) {
-        applyTheme(e.matches ? 'dark' : 'light');
-      }
-    });
+function updateButtons(theme) {
+  document.querySelectorAll('#themeToggle').forEach(btn => {
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
   });
-})();
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Apply immediately to prevent flash
+applyTheme(getTheme());
+
+// Wire up buttons after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  updateButtons(getTheme());
+  document.querySelectorAll('#themeToggle').forEach(btn => {
+    btn.addEventListener('click', toggleTheme);
+  });
+});
+
+// Also wire up immediately in case DOMContentLoaded already fired
+if (document.readyState !== 'loading') {
+  updateButtons(getTheme());
+  document.querySelectorAll('#themeToggle').forEach(btn => {
+    btn.addEventListener('click', toggleTheme);
+  });
+}
