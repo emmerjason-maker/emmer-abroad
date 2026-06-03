@@ -470,6 +470,7 @@ function buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImag
   <script src="../darkmode.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-KRCW4S3G9P');</script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3956728145959428" crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="bg-kanji" aria-hidden="true">記</div>
