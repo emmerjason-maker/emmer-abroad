@@ -380,11 +380,144 @@ ${videoBlock}${galleryBlock}
       </div>
 
       <footer class="post-entry-footer">
+        <a href="blog.html" class="read-more small">← Back to Journal</a>
+      </footer>
+
+      <div class="post-comments">
+        <div id="disqus_thread_post${postNumber}"></div>
+        <script>
+          (function() {
+            var d = document, s = d.createElement('script');
+            s.src = 'https://emmericanadventure.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            s.setAttribute('data-page-identifier', 'post-${postNumber}');
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view comments.</noscript>
+      </div>
+
+    </article>`;
+}
+
+
+
+// ── Build individual post page HTML ──────────────────────────────
+function buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImages, linkUrl, linkText }) {
+  const fmtDate = date
+    ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+    : '';
+
+  let imgSrc = uploadedImages && uploadedImages.length > 0 ? uploadedImages[0].path
+             : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
+
+  let mediaHtml = '';
+  if (ytId) {
+    mediaHtml += `
+      <div class="post-video">
+        <div class="video-embed-wrap">
+          <iframe src="https://www.youtube.com/embed/${ytId}" title="${escHtml(title)}"
+            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>
+      </div>`;
+  }
+  if (uploadedImages && uploadedImages.length === 1) {
+    mediaHtml += `
+      <figure class="post-photo">
+        <img src="../${escHtml(uploadedImages[0].path)}" alt="${escHtml(uploadedImages[0].caption || title)}" />
+        ${uploadedImages[0].caption ? `<figcaption>${escHtml(uploadedImages[0].caption)}</figcaption>` : ''}
+      </figure>`;
+  } else if (uploadedImages && uploadedImages.length > 1) {
+    const gridClass = uploadedImages.length === 2 ? 'gallery-2' : uploadedImages.length === 3 ? 'gallery-3' : 'gallery-many';
+    const items = uploadedImages.map(img => `
+        <figure class="gallery-item">
+          <img src="../${escHtml(img.path)}" alt="${escHtml(img.caption || title)}" />
+          ${img.caption ? `<figcaption>${escHtml(img.caption)}</figcaption>` : ''}
+        </figure>`).join('');
+    mediaHtml += `<div class="post-gallery ${gridClass}">${items}</div>`;
+  }
+
+  let linkBlock = linkUrl ? `<p><a href="${escHtml(linkUrl)}" target="_blank" rel="noopener">${escHtml(linkText || linkUrl)}</a></p>` : '';
+  const plainExcerpt = body.replace(/<[^>]+>/g, '').substring(0, 140);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escHtml(title)} — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="../blog.css" />
+  <link rel="stylesheet" href="../darkmode.css" />
+  <meta name="description" content="${escHtml(plainExcerpt)}" />
+  <meta name="author" content="Emmerican Adventure" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://emmericanadventure.com/posts/${slug}.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Emmerican Adventure" />
+  <meta property="og:title" content="${escHtml(title)} — Emmerican Adventure" />
+  <meta property="og:description" content="${escHtml(plainExcerpt)}" />
+  <meta property="og:url" content="https://emmericanadventure.com/posts/${slug}.html" />
+  ${imgSrc ? `<meta property="og:image" content="https://emmericanadventure.com/${escHtml(imgSrc)}" />` : ''}
+  <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <script src="../darkmode.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-KRCW4S3G9P');</script>
+</head>
+<body>
+  <div class="bg-kanji" aria-hidden="true">記</div>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="../index.html" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;">
+          <span class="logo-kanji">日本</span>
+          <div class="logo-text">
+            <span class="logo-title">Emmerican Adventure</span>
+            <span class="logo-sub">Chapter 1: Japan</span>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="../index.html" class="nav-link">Home</a>
+        <a href="../blog.html" class="nav-link active">Journal</a>
+        <a href="../index.html#videos" class="nav-link">Videos</a>
+        <a href="../index.html#photos" class="nav-link">Photos</a>
+        <a href="../index.html#timeline" class="nav-link">Timeline</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+  <main class="blog-main">
+    <article class="post-entry post-full">
+      <header class="post-entry-header">
+        <div class="post-meta">
+          <span class="post-tag">Post #${postNumber}</span>
+          <time class="post-date">${escHtml(fmtDate)}</time>
+        </div>
+        <h1 class="post-entry-title">${escHtml(title)}</h1>
+      </header>
+      ${mediaHtml}
+      <div class="post-body">
+        ${body}
+        ${linkBlock}
+      </div>
+      <footer class="post-entry-footer">
+        <a href="../blog.html" class="read-more small">← Back to Journal</a>
+      </footer>
+      <div class="post-comments">
         <div id="disqus_thread"></div>
         <script>
           var disqus_config = function () {
-            this.page.url = window.location.href;
-            this.page.identifier = window.location.pathname + window.location.search;
+            this.page.url = 'https://emmericanadventure.com/posts/${slug}.html';
+            this.page.identifier = '${slug}';
           };
           (function() {
             var d = document, s = d.createElement('script');
@@ -394,9 +527,31 @@ ${videoBlock}${galleryBlock}
           })();
         </script>
         <noscript>Please enable JavaScript to view comments.</noscript>
-      </footer>
+      </div>
+    </article>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">日本へ</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 — Made with 愛 in Jacksonville, FL</div>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../main.js"></script>
+</body>
+</html>`;
+}
 
-    </article>`;
+// ── Generate URL slug from title ─────────────────────────────────
+function slugify(title) {
+  return title.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 // ── Publish ───────────────────────────────────────────────────────
@@ -417,6 +572,8 @@ async function handlePublish() {
   showStatus('Uploading…', false, true);
 
   try {
+    const slug = slugify(title);
+
     // 1. Upload all images to GitHub
     const uploadedImages = [];
     for (let i = 0; i < images.length; i++) {
@@ -428,34 +585,61 @@ async function handlePublish() {
       uploadedImages.push({ path, caption: img.caption });
     }
 
-    // 2. Fetch current blog.html
-    showStatus('Updating blog…', false, true);
-    const fileRes = await ghFetch(`contents/${CONFIG.blogFile}`);
-    if (!fileRes.ok) throw new Error(`Could not fetch ${CONFIG.blogFile}: ${fileRes.status}`);
-    const fileJson = await fileRes.json();
-    const currentContent = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
-    const sha = fileJson.sha;
+    // 2. Fetch current blog.html to count posts
+    showStatus('Publishing post…', false, true);
+    const blogRes = await ghFetch(`contents/${CONFIG.blogFile}`);
+    if (!blogRes.ok) throw new Error(`Could not fetch ${CONFIG.blogFile}: ${blogRes.status}`);
+    const blogJson = await blogRes.json();
+    const blogContent = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
+    const blogSha = blogJson.sha;
 
-    // 3. Count existing posts to determine post number
-    const postNumber = countExistingPosts(currentContent) + 1;
+    // 3. Count existing posts
+    const postNumber = countExistingPosts(blogContent) + 1;
 
-    // 4. Build new post
-    const newPost = buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkText, postNumber });
+    // 4. Build and push individual post page
+    showStatus('Creating post page…', false, true);
+    const postPageHtml = buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImages, linkUrl, linkText });
+    await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
-    // 5. Insert before the template marker (newest posts on top)
-    const marker = '<!-- ====== NEW POST — COPY FROM HERE ====== -->';
-    let updated;
-    if (currentContent.includes(marker)) {
-      updated = currentContent.replace(marker, newPost + '\n\n    ' + marker);
+    // 5. Build index card for blog.html
+    const fmtDate = date ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '';
+    const plainText = $('postBody').innerText.trim();
+    const excerpt = plainText.length > 140 ? plainText.substring(0, 140).replace(/\s+\S*$/, '') + '…' : plainText;
+    const thumbSrc = uploadedImages.length > 0 ? uploadedImages[0].path
+                   : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
+
+    const newCard = `
+    <article class="post-index-card">
+      <a href="posts/${slug}.html" class="post-index-link">
+        <div class="post-index-img">
+          ${thumbSrc ? `<img src="${escHtml(thumbSrc)}" alt="${escHtml(title)}" />` : '<div class="img-placeholder"><span class="placeholder-kanji">記</span></div>'}
+        </div>
+        <div class="post-index-body">
+          <div class="post-meta">
+            <span class="post-tag">Post #${postNumber}</span>
+            <time class="post-date">${escHtml(fmtDate)}</time>
+          </div>
+          <h2 class="post-index-title">${escHtml(title)}</h2>
+          <p class="post-index-excerpt">${escHtml(excerpt)}</p>
+          <span class="read-more small">Read Post <span>→</span></span>
+        </div>
+      </a>
+    </article>`;
+
+    // 6. Insert card at top of blog.html
+    const cardMarker = '<!-- ====== NEW POST INDEX CARD — COPY FROM HERE ====== -->';
+    let updatedBlog;
+    if (blogContent.includes(cardMarker)) {
+      updatedBlog = blogContent.replace(cardMarker, cardMarker + newCard);
     } else {
-      updated = currentContent.replace('<article class="post-entry">', newPost + '\n\n    <article class="post-entry">');
+      updatedBlog = blogContent.replace('<article class="post-index-card">', newCard + '\n\n    <article class="post-index-card">');
     }
 
-    // 6. Push updated blog.html
+    // 7. Push updated blog.html
     const pushRes = await ghFetch(`contents/${CONFIG.blogFile}`, 'PUT', {
       message: `New post: ${title}`,
-      content: btoa(unescape(encodeURIComponent(updated))),
-      sha,
+      content: btoa(unescape(encodeURIComponent(updatedBlog))),
+      sha: blogSha,
       branch: CONFIG.branch,
     });
 
@@ -464,9 +648,9 @@ async function handlePublish() {
       throw new Error(err.message || 'GitHub push failed');
     }
 
-    // 7. Update homepage featured post
+    // 8. Update homepage featured post
     showStatus('Updating homepage…', false, true);
-    await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId });
+    await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug });
 
     showStatus('✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
@@ -535,7 +719,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
           </div>
           <h2 class="featured-title">${escHtml(title)}</h2>
           <p class="featured-excerpt">${escHtml(excerpt)}</p>
-          <a href="blog.html" class="read-more">Read More <span>→</span></a>
+          <a href="${postLink}" class="read-more">Read More <span>→</span></a>
         </div>
       </article>
     </section>`;
