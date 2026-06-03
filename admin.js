@@ -858,3 +858,184 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+// ═══════════════════════════════════════════════════════════════
+// EDIT POSTS FEATURE
+// ═══════════════════════════════════════════════════════════════
+
+let editingSlug = null;
+let editingFileSha = null;
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+  const panelNew  = $('panelNew');
+  const panelEdit = $('panelEdit');
+  const tabNew    = $('tabNew');
+  const tabEdit   = $('tabEdit');
+
+  if (tab === 'new') {
+    panelNew.classList.remove('hidden');
+    panelEdit.classList.add('hidden');
+    tabNew.classList.add('active');
+    tabEdit.classList.remove('active');
+  } else {
+    panelNew.classList.add('hidden');
+    panelEdit.classList.remove('hidden');
+    tabNew.classList.remove('active');
+    tabEdit.classList.add('active');
+    loadPostsList();
+  }
+}
+
+// ── Load list of posts from /posts/ folder ────────────────────
+async function loadPostsList() {
+  const list = $('postsList');
+  list.innerHTML = '<p class="preview-empty">Loading posts…</p>';
+
+  try {
+    const res = await ghFetch('contents/posts');
+    if (!res.ok) throw new Error('Could not fetch posts folder');
+    const files = await res.json();
+
+    const htmlFiles = files.filter(f => f.name.endsWith('.html'));
+
+    if (htmlFiles.length === 0) {
+      list.innerHTML = '<p class="preview-empty">No posts found yet.</p>';
+      return;
+    }
+
+    list.innerHTML = htmlFiles.map(file => {
+      // Convert slug back to readable title
+      const title = file.name
+        .replace('.html', '')
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+      return `
+        <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+          <div class="post-list-title">${title}</div>
+          <div class="post-list-slug">${file.name}</div>
+          <span class="post-list-arrow">Edit →</span>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+// ── Load a post for editing ───────────────────────────────────
+async function loadPostForEditing(filename, sha) {
+  editingSlug = filename.replace('.html', '');
+
+  showStatus('Loading post…', false, true);
+
+  try {
+    const res = await ghFetch(`contents/posts/${filename}`);
+    if (!res.ok) throw new Error('Could not fetch post');
+    const json = await res.json();
+    const html = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    editingFileSha = json.sha;
+
+    // Parse the post
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const title = doc.querySelector('.post-entry-title')?.textContent?.trim() || '';
+    const bodyEl = doc.querySelector('.post-body');
+    const bodyHtml = bodyEl ? bodyEl.innerHTML : '';
+
+    // Populate edit form
+    $('editTitle').value = title;
+    $('editBody').innerHTML = bodyHtml;
+    $('editPostTitle').textContent = `Editing: ${title}`;
+
+    // Show edit form, hide list
+    $('postsList').classList.add('hidden');
+    $('editForm').classList.remove('hidden');
+
+    // Wire up buttons
+    $('backToListBtn').onclick = () => {
+      $('editForm').classList.add('hidden');
+      $('postsList').classList.remove('hidden');
+      $('statusBar').classList.add('hidden');
+    };
+
+    $('editPreviewBtn').onclick = () => {
+      $('editPreviewBox').innerHTML = `
+        <h2 class="p-title">${escHtml($('editTitle').value)}</h2>
+        <div class="p-body">${$('editBody').innerHTML}</div>
+      `;
+    };
+
+    $('saveEditBtn').onclick = () => savePostEdit(filename, html);
+
+    $('statusBar').classList.add('hidden');
+
+  } catch (err) {
+    showStatus('✗ Error loading post: ' + err.message, true);
+  }
+}
+
+// ── Save edited post ──────────────────────────────────────────
+async function savePostEdit(filename, originalHtml) {
+  const newTitle = $('editTitle').value.trim();
+  const newBody  = $('editBody').innerHTML.trim();
+
+  if (!newTitle) { alert('Title cannot be empty'); return; }
+
+  $('saveEditLabel').textContent = 'Saving…';
+  $('saveEditBtn').disabled = true;
+  showStatus('Saving changes…', false, true);
+
+  try {
+    // Parse original HTML and replace title + body
+    let updated = originalHtml;
+
+    // Replace title in h1
+    updated = updated.replace(
+      /(<h1 class="post-entry-title">)([\s\S]*?)(<\/h1>)/,
+      `$1${escHtml(newTitle)}$3`
+    );
+
+    // Replace title in <title> tag
+    updated = updated.replace(
+      /<title>.*?<\/title>/,
+      `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
+    );
+
+    // Replace body content
+    updated = updated.replace(
+      /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
+      `$1\n        ${newBody}\n      $3`
+    );
+
+    // Push to GitHub
+    const pushRes = await ghFetch(`contents/posts/${filename}`, 'PUT', {
+      message: `Edit post: ${newTitle}`,
+      content: btoa(unescape(encodeURIComponent(updated))),
+      sha: editingFileSha,
+      branch: CONFIG.branch,
+    });
+
+    if (!pushRes.ok) {
+      const err = await pushRes.json();
+      throw new Error(err.message || 'Save failed');
+    }
+
+    showStatus('✓ Post saved! Changes will be live in ~60 seconds.', false);
+
+  } catch (err) {
+    showStatus('✗ Error: ' + err.message, true);
+  } finally {
+    $('saveEditLabel').textContent = 'Save Changes →';
+    $('saveEditBtn').disabled = false;
+  }
+}
+
+// ── Edit toolbar (for the edit body editor) ───────────────────
+function editToolbar(action) {
+  $('editBody').focus();
+  if (action === 'bold')   document.execCommand('bold');
+  if (action === 'italic') document.execCommand('italic');
+  if (action === 'h3')     document.execCommand('formatBlock', false, 'h3');
+}
