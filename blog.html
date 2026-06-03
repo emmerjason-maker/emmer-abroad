@@ -70,6 +70,7 @@
       <div class="hero-label">Chapter 1 — Japan</div>
       <h1 class="blog-hero-title">Field Notes</h1>
       <p class="blog-hero-desc">Following our PCS to Yokosuka — base life, Japan travel, language breakthroughs, and stories from the road.</p>
+      <div class="blog-last-updated" id="blogLastUpdated"></div>
     </div>
 
     <!-- ================================================================
@@ -149,5 +150,15 @@
   </footer>
 
   <script src="main.js"></script>
+  <script>
+    // Show last updated date from most recent post
+    const firstPost = document.querySelector('.post-index-card time');
+    if (firstPost) {
+      const el = document.getElementById('blogLastUpdated');
+      if (el) {
+        el.innerHTML = `<span class="last-updated-label">Latest post:</span> <span class="last-updated-date">${firstPost.textContent}</span>`;
+      }
+    }
+  </script>
 </body>
 </html>
