@@ -244,7 +244,6 @@ function extractYouTubeId(input) {
 function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
-  const category = $('postCategory').value;
   const body     = $('postBody').innerHTML.trim();
   const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
@@ -391,7 +390,6 @@ ${videoBlock}${galleryBlock}
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
-  const category = $('postCategory').value;
   const body     = $('postBody').innerHTML.trim();
   const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
