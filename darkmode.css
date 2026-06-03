@@ -103,3 +103,28 @@
 [data-theme="dark"] .post-card-img {
   background: var(--paper-dark);
 }
+/* ── Footer ─────────────────────────────────────────────────── */
+[data-theme="dark"] .site-footer {
+  background: #0e0c0a;
+  border-top-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .footer-copy {
+  color: rgba(245,240,232,0.6);
+}
+
+[data-theme="dark"] .footer-name {
+  color: var(--white);
+}
+
+[data-theme="dark"] .footer-kanji {
+  color: var(--red);
+}
+
+[data-theme="dark"] .footer-links a {
+  color: rgba(245,240,232,0.55);
+}
+
+[data-theme="dark"] .footer-links a:hover {
+  color: var(--white);
+}
