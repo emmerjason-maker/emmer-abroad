@@ -50,24 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Newsletter form ───────────────────────────────────────────
-  const btn = document.querySelector('.newsletter-btn');
-  const input = document.querySelector('.newsletter-input');
-  if (btn && input) {
-    btn.addEventListener('click', () => {
-      if (!input.value.includes('@')) {
-        input.style.borderColor = '#c0392b';
-        input.focus();
-        return;
-      }
-      btn.textContent = '✓ Subscribed!';
-      btn.style.background = '#27ae60';
-      input.value = '';
-      input.disabled = true;
-      btn.disabled = true;
-    });
-  }
-
   // ── Photo lightbox ────────────────────────────────────────────
   const lightbox    = document.getElementById('lightbox');
   const lbImg       = document.getElementById('lightboxImg');
