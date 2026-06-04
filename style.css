@@ -1098,3 +1098,38 @@ img { max-width: 100%; display: block; }
 .section-tag-link:hover {
   opacity: 0.7;
 }
+
+/* ─── Journey Map Section ────────────────────────────────────────── */
+.journey-map-section {
+  padding: 4rem 0;
+  border-top: 1px solid var(--paper-dark);
+}
+
+.journey-map-desc {
+  font-size: 1rem;
+  color: var(--ink-faint);
+  max-width: 600px;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.journey-map-wrap {
+  border: 1px solid var(--paper-dark);
+  overflow: hidden;
+  max-width: 900px;
+}
+
+.journey-map-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.journey-map-wrap:hover .journey-map-img {
+  transform: scale(1.02);
+}
+
+@media (max-width: 600px) {
+  .journey-map-section { padding: 3rem 0; }
+}
