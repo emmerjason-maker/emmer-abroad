@@ -882,6 +882,11 @@ img { max-width: 100%; display: block; }
 }
 .photo-item:hover::after { opacity: 1; }
 
+.photos-view-all {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
 /* ─── Lightbox ──────────────────────────────────────────────────── */
 .lightbox {
   display: none;
