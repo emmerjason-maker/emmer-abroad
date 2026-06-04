@@ -434,8 +434,6 @@ img { max-width: 100%; display: block; }
 
 .timeline {
   position: relative;
-  padding-left: 2rem;
-  padding-right: 2rem;
 }
 
 .timeline::before {
@@ -713,7 +711,7 @@ img { max-width: 100%; display: block; }
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
 
@@ -813,7 +811,7 @@ img { max-width: 100%; display: block; }
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
 }
 
