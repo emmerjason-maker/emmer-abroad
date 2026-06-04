@@ -417,13 +417,19 @@ img { max-width: 100%; display: block; }
 
 /* ─── Timeline ──────────────────────────────────────────────────── */
 .timeline-section {
-  max-width: 1200px;
-  margin: 0 auto;
   position: relative;
   z-index: 1;
+  padding: 0 0 6rem;
+}
+
+.timeline-section .section-header,
+.timeline-section .timeline,
+.timeline-section .timeline-toggle-btn {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 6rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .timeline {
@@ -869,7 +875,6 @@ img { max-width: 100%; display: block; }
 
 /* ─── Lightbox ──────────────────────────────────────────────────── */
 .lightbox {
-  z-index: 99999 !important;
   display: none;
   position: fixed;
   inset: 0;
@@ -1106,11 +1111,22 @@ img { max-width: 100%; display: block; }
 .journey-map-section {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 5rem;
+  padding: 4rem 0 5rem;
   border-top: 1px solid var(--paper-dark);
-  padding-top: 4rem;
+}
+
+.journey-map-section .section-header,
+.journey-map-section .journey-map-desc,
+.journey-map-section .journey-map-wrap {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.journey-map-section .journey-map-desc {
+  padding-bottom: 0;
 }
 
 .journey-map-desc {
@@ -1139,13 +1155,5 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 600px) {
-  .journey-map-section {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 5rem;
-  border-top: 1px solid var(--paper-dark);
-  padding-top: 4rem;
-}
+  .journey-map-section { padding: 3rem 1.25rem; }
 }
