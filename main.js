@@ -115,3 +115,90 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowRight') navigate(1);
   });
 });
+
+// ── Post Image Lightbox ───────────────────────────────────────────
+(function() {
+  // Inject lightbox HTML if not already present
+  if (!document.getElementById('postLightbox')) {
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="post-lightbox" id="postLightbox">
+        <button class="post-lightbox-close" id="plbClose">✕</button>
+        <div class="post-lightbox-counter" id="plbCounter"></div>
+        <button class="post-lightbox-prev" id="plbPrev">‹</button>
+        <div class="post-lightbox-img-wrap">
+          <img id="plbImg" src="" alt="" />
+        </div>
+        <button class="post-lightbox-next" id="plbNext">›</button>
+        <div class="post-lightbox-caption" id="plbCaption"></div>
+      </div>
+    `);
+  }
+
+  let plbImages = [];
+  let plbIdx = 0;
+
+  function collectImages(clickedImg) {
+    // Collect all gallery images from the same article/section
+    const article = clickedImg.closest('article') || document.querySelector('.blog-main');
+    if (article) {
+      plbImages = Array.from(article.querySelectorAll('.gallery-item img, .post-photo img, figure img'));
+    }
+    if (plbImages.length === 0) plbImages = [clickedImg];
+    return plbImages.indexOf(clickedImg);
+  }
+
+  function openPlb(img) {
+    const idx = collectImages(img);
+    plbIdx = idx >= 0 ? idx : 0;
+    showPlb();
+    document.getElementById('postLightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function showPlb() {
+    const img = plbImages[plbIdx];
+    document.getElementById('plbImg').src = img.src;
+    document.getElementById('plbImg').alt = img.alt;
+    document.getElementById('plbCaption').textContent =
+      img.closest('figure')?.querySelector('figcaption')?.textContent || img.alt || '';
+    document.getElementById('plbCounter').textContent =
+      plbImages.length > 1 ? `${plbIdx + 1} / ${plbImages.length}` : '';
+    // Hide prev/next if only one image
+    document.getElementById('plbPrev').style.display = plbImages.length > 1 ? '' : 'none';
+    document.getElementById('plbNext').style.display = plbImages.length > 1 ? '' : 'none';
+  }
+
+  function closePlb() {
+    document.getElementById('postLightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function navPlb(dir) {
+    plbIdx = (plbIdx + dir + plbImages.length) % plbImages.length;
+    showPlb();
+  }
+
+  // Wire up after DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    // Click on gallery or post-photo images
+    document.addEventListener('click', (e) => {
+      const img = e.target.closest('.gallery-item img, .post-photo img, figure img');
+      if (img) { e.preventDefault(); openPlb(img); }
+    });
+
+    document.getElementById('plbClose')?.addEventListener('click', closePlb);
+    document.getElementById('plbPrev')?.addEventListener('click', () => navPlb(-1));
+    document.getElementById('plbNext')?.addEventListener('click', () => navPlb(1));
+
+    document.getElementById('postLightbox')?.addEventListener('click', (e) => {
+      if (e.target.id === 'postLightbox') closePlb();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('postLightbox')?.classList.contains('open')) return;
+      if (e.key === 'Escape')     closePlb();
+      if (e.key === 'ArrowLeft')  navPlb(-1);
+      if (e.key === 'ArrowRight') navPlb(1);
+    });
+  });
+})();
