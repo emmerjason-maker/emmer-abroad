@@ -118,8 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Post Image Lightbox ───────────────────────────────────────────
 (function() {
-  // Inject lightbox HTML if not already present
-  if (!document.getElementById('postLightbox')) {
+  let plbImages = [];
+  let plbIdx = 0;
+
+  function injectLightbox() {
+    if (document.getElementById('postLightbox')) return;
     document.body.insertAdjacentHTML('beforeend', `
       <div class="post-lightbox" id="postLightbox">
         <button class="post-lightbox-close" id="plbClose">✕</button>
@@ -132,13 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="post-lightbox-caption" id="plbCaption"></div>
       </div>
     `);
+    document.getElementById('plbClose').addEventListener('click', closePlb);
+    document.getElementById('plbPrev').addEventListener('click', () => navPlb(-1));
+    document.getElementById('plbNext').addEventListener('click', () => navPlb(1));
+    document.getElementById('postLightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'postLightbox') closePlb();
+    });
   }
 
-  let plbImages = [];
-  let plbIdx = 0;
-
   function collectImages(clickedImg) {
-    // Collect all gallery images from the same article/section
     const article = clickedImg.closest('article') || document.querySelector('.blog-main');
     if (article) {
       plbImages = Array.from(article.querySelectorAll('.gallery-item img, .post-photo img, figure img'));
@@ -148,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openPlb(img) {
+    injectLightbox();
     const idx = collectImages(img);
     plbIdx = idx >= 0 ? idx : 0;
     showPlb();
@@ -163,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
       img.closest('figure')?.querySelector('figcaption')?.textContent || img.alt || '';
     document.getElementById('plbCounter').textContent =
       plbImages.length > 1 ? `${plbIdx + 1} / ${plbImages.length}` : '';
-    // Hide prev/next if only one image
     document.getElementById('plbPrev').style.display = plbImages.length > 1 ? '' : 'none';
     document.getElementById('plbNext').style.display = plbImages.length > 1 ? '' : 'none';
   }
@@ -178,27 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
     showPlb();
   }
 
-  // Wire up after DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    // Click on gallery or post-photo images
-    document.addEventListener('click', (e) => {
-      const img = e.target.closest('.gallery-item img, .post-photo img, figure img');
-      if (img) { e.preventDefault(); openPlb(img); }
-    });
+  document.addEventListener('click', (e) => {
+    const img = e.target.closest('.gallery-item img, .post-photo img, figure img');
+    if (img) { e.preventDefault(); openPlb(img); }
+  });
 
-    document.getElementById('plbClose')?.addEventListener('click', closePlb);
-    document.getElementById('plbPrev')?.addEventListener('click', () => navPlb(-1));
-    document.getElementById('plbNext')?.addEventListener('click', () => navPlb(1));
-
-    document.getElementById('postLightbox')?.addEventListener('click', (e) => {
-      if (e.target.id === 'postLightbox') closePlb();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (!document.getElementById('postLightbox')?.classList.contains('open')) return;
-      if (e.key === 'Escape')     closePlb();
-      if (e.key === 'ArrowLeft')  navPlb(-1);
-      if (e.key === 'ArrowRight') navPlb(1);
-    });
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('postLightbox')?.classList.contains('open')) return;
+    if (e.key === 'Escape')     closePlb();
+    if (e.key === 'ArrowLeft')  navPlb(-1);
+    if (e.key === 'ArrowRight') navPlb(1);
   });
 })();
