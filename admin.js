@@ -403,10 +403,23 @@ ${videoBlock}${galleryBlock}
 
 
 // ── Build individual post page HTML ──────────────────────────────
-function buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImages, linkUrl, linkText }) {
+function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
+
+  // Build location HTML — supports plain text, URL, or "Label | URL" format
+  let locationHtml = '';
+  if (location) {
+    if (location.startsWith('http') || location.startsWith('maps.')) {
+      locationHtml = `<div class="post-location"><a href="${escHtml(location)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
+    } else if (location.includes('|')) {
+      const parts = location.split('|').map(s => s.trim());
+      locationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
+    } else {
+      locationHtml = `<div class="post-location">📍 ${escHtml(location)}</div>`;
+    }
+  }
 
   let imgSrc = uploadedImages && uploadedImages.length > 0 ? uploadedImages[0].path
              : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
@@ -504,6 +517,7 @@ function buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImag
           <time class="post-date">${escHtml(fmtDate)}</time>
         </div>
         <h1 class="post-entry-title">${escHtml(title)}</h1>
+        ${locationHtml}
       </header>
       <div class="post-ad">
         <ins class="adsbygoogle"
@@ -568,6 +582,7 @@ function slugify(title) {
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
+  const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
   const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
@@ -608,7 +623,7 @@ async function handlePublish() {
 
     // 4. Build and push individual post page
     showStatus('Creating post page…', false, true);
-    const postPageHtml = buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImages, linkUrl, linkText });
+    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
     // 5. Build index card for blog.html
@@ -843,6 +858,7 @@ function resetForm() {
   $('postBody').innerHTML = '';
   $('postYoutube').value  = '';
   $('postLink').value     = '';
+  if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
   $('postDate').value     = new Date().toISOString().split('T')[0];
   images = [];

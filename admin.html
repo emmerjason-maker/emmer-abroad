@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — Emmerican Adventure</title>
+  <title>Admin — Emmer Abroad</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -64,14 +64,7 @@
         <span id="statusMsg"></span>
       </div>
 
-      <!-- ── TABS ──────────────────────────────────────────────────── -->
-      <div class="admin-tabs">
-        <button class="admin-tab active" id="tabNew" onclick="switchTab('new')">✏️ New Post</button>
-        <button class="admin-tab" id="tabEdit" onclick="switchTab('edit')">📝 Edit Posts</button>
-      </div>
-
-      <!-- ── NEW POST PANEL ─────────────────────────────────────── -->
-      <div id="panelNew" class="admin-layout">
+      <div class="admin-layout">
 
         <!-- ── LEFT: Editor ──────────────────────────────────────── -->
         <div class="editor-panel">
@@ -87,6 +80,14 @@
           <div class="field-group">
             <label class="field-label">Title</label>
             <input type="text" class="field-input" id="postTitle" placeholder="Your post title..." />
+          </div>
+
+          <!-- Location -->
+          <div class="field-group">
+            <label class="field-label">Location <span class="optional">optional</span></label>
+            <input type="text" class="field-input" id="postLocation"
+              placeholder="e.g. Jacksonville, FL  or  Naval Air Station Jacksonville, FL | https://maps.app.goo.gl/xxx" />
+            <p class="field-hint">Plain text, a Maps URL, or <strong>Label | Maps URL</strong> for a clickable link.</p>
           </div>
 
           <!-- Body -->
@@ -171,62 +172,7 @@
           </div>
         </div>
 
-      </div><!-- end panelNew -->
-
-      <!-- ── EDIT POSTS PANEL ──────────────────────────────────── -->
-      <div id="panelEdit" class="hidden">
-        <div class="edit-posts-panel">
-          <h2 class="panel-title">Edit Posts</h2>
-          <p class="field-hint" style="margin-bottom:1.5rem;">Click any post to load it into the editor. Changes will update the post page on GitHub.</p>
-          <div id="postsList" class="posts-list">
-            <p class="preview-empty">Loading posts…</p>
-          </div>
-        </div>
-
-        <!-- Edit form (hidden until a post is selected) -->
-        <div id="editForm" class="hidden">
-          <div class="admin-layout">
-            <div class="editor-panel">
-              <div class="edit-post-header">
-                <button class="btn-ghost" id="backToListBtn">← Back to posts</button>
-                <h2 class="panel-title" id="editPostTitle" style="margin-bottom:0;">Editing post</h2>
-              </div>
-
-              <div class="field-group" style="margin-top:1.5rem;">
-                <label class="field-label">Title</label>
-                <input type="text" class="field-input" id="editTitle" />
-              </div>
-
-              <div class="field-group">
-                <label class="field-label">Body
-                  <span class="field-hint-inline">Select text then click a button to format</span>
-                </label>
-                <div class="toolbar">
-                  <button class="toolbar-btn" data-action="bold" title="Bold" onclick="editToolbar('bold')"><b>B</b></button>
-                  <button class="toolbar-btn italic" data-action="italic" title="Italic" onclick="editToolbar('italic')"><i>I</i></button>
-                  <button class="toolbar-btn" data-action="h3" title="Heading" onclick="editToolbar('h3')">H</button>
-                </div>
-                <div class="body-editor" id="editBody" contenteditable="true"></div>
-              </div>
-
-              <div class="publish-row">
-                <button class="btn-preview" id="editPreviewBtn">Preview</button>
-                <button class="btn-publish" id="saveEditBtn">
-                  <span id="saveEditLabel">Save Changes →</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="preview-panel">
-              <h2 class="panel-title">Preview</h2>
-              <div class="preview-box" id="editPreviewBox">
-                <p class="preview-empty">Click Preview to see changes.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div><!-- end panelEdit -->
-
+      </div>
     </main>
   </div>
 
