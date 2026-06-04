@@ -320,13 +320,109 @@
   color: var(--ink-faint);
 }
 
-/* ─── AdSense — prevent empty ad gap ───────────────────────────── */
-.post-ad {
-  margin: 1rem 0;
-  min-height: 0;
-  overflow: hidden;
+/* ─── Post Image Lightbox ────────────────────────────────────────── */
+.post-lightbox {
+  display: none;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0,0,0,0.95) !important;
+  z-index: 99999 !important;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
-.post-ad ins[data-ad-status="unfilled"],
-.post-ad ins:not([data-ad-status]) {
-  display: none !important;
+
+.post-lightbox.open {
+  display: flex !important;
+}
+
+.post-lightbox-img-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 90vw;
+  max-height: 80vh;
+}
+
+.post-lightbox-img-wrap img {
+  max-width: 90vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+
+.post-lightbox-close {
+  position: fixed;
+  top: 1rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-size: 2.5rem;
+  cursor: pointer;
+  z-index: 100000;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+}
+.post-lightbox-close:hover { color: #fff; }
+
+.post-lightbox-prev,
+.post-lightbox-next {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  font-size: 2.5rem;
+  width: 52px;
+  height: 72px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  transition: background 0.2s;
+}
+.post-lightbox-prev { left: 0.75rem; }
+.post-lightbox-next { right: 0.75rem; }
+.post-lightbox-prev:hover,
+.post-lightbox-next:hover { background: rgba(255,255,255,0.25); }
+
+.post-lightbox-caption {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  max-width: 80vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-lightbox-counter {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.1em;
+}
+
+.gallery-item img,
+.post-photo img {
+  cursor: zoom-in;
 }
