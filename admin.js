@@ -632,16 +632,60 @@ async function handlePublish() {
       showStatus(`Optimizing & uploading photo ${i + 1} of ${images.length}…`, false, true);
       const safeName = img.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
       const path = `images/${Date.now()}-${safeName}`;
-      // Compress via canvas before upload
+      // Compress via canvas, preserving EXIF orientation
       const compressed = await new Promise((resolve) => {
+        // Read EXIF orientation from raw file bytes
+        const getOrientation = (dataUrl) => {
+          try {
+            const bin = atob(dataUrl.split(',')[1]);
+            const view = new DataView(new ArrayBuffer(bin.length));
+            for (let i = 0; i < bin.length; i++) view.setUint8(i, bin.charCodeAt(i));
+            if (view.getUint16(0, false) !== 0xFFD8) return 1;
+            let offset = 2;
+            while (offset < view.byteLength) {
+              if (view.getUint16(offset, false) === 0xFFE1) {
+                if (view.getUint32(offset += 2, false) !== 0x45786966) return 1;
+                const little = view.getUint16(offset += 6, false) === 0x4949;
+                offset += view.getUint32(offset + 4, little);
+                const tags = view.getUint16(offset, little);
+                offset += 2;
+                for (let i = 0; i < tags; i++) {
+                  if (view.getUint16(offset + (i * 12), little) === 0x0112)
+                    return view.getUint16(offset + (i * 12) + 8, little);
+                }
+              } else if ((view.getUint16(offset, false) & 0xFF00) !== 0xFF00) break;
+              else offset += view.getUint16(offset + 2, false) + 2;
+            }
+          } catch(e) {}
+          return 1;
+        };
+
+        const orientation = getOrientation(img.dataUrl);
         const image = new Image();
         image.onload = () => {
           const maxW = 1600;
           let w = image.width, h = image.height;
-          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          // Swap dimensions for 90/270 degree rotations
+          const rotated = orientation >= 5 && orientation <= 8;
+          let tw = rotated ? h : w, th = rotated ? w : h;
+          if (tw > maxW) { th = Math.round(th * maxW / tw); tw = maxW; }
           const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+          canvas.width = tw; canvas.height = th;
+          const ctx = canvas.getContext('2d');
+          // Apply orientation transform
+          switch (orientation) {
+            case 2: ctx.transform(-1, 0, 0, 1, tw, 0); break;
+            case 3: ctx.transform(-1, 0, 0, -1, tw, th); break;
+            case 4: ctx.transform(1, 0, 0, -1, 0, th); break;
+            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+            case 6: ctx.transform(0, 1, -1, 0, th, 0); break;
+            case 7: ctx.transform(0, -1, -1, 0, th, tw); break;
+            case 8: ctx.transform(0, -1, 1, 0, 0, tw); break;
+          }
+          // Scale to fit
+          const scaleW = rotated ? h / image.height * th / h : tw / w;
+          const scaleH = rotated ? w / image.width * tw / w : th / h;
+          ctx.drawImage(image, 0, 0, image.width * scaleW, image.height * scaleH);
           resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
         };
         image.src = img.dataUrl;
