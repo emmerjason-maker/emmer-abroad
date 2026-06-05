@@ -688,7 +688,7 @@ img { max-width: 100%; display: block; }
 .videos-section {
   position: relative;
   z-index: 1;
-  background: #1a1714 !important;
+  background: var(--ink);
   padding: 5rem 0;
 }
 
@@ -730,7 +730,6 @@ img { max-width: 100%; display: block; }
   border: 1px solid rgba(255,255,255,0.1);
   overflow: hidden;
   transition: transform 0.25s, border-color 0.25s;
-  isolation: isolate;
 }
 .video-card:hover {
   transform: translateY(-4px);
@@ -756,7 +755,7 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: #f5f0e8;
+  background: var(--white);
 }
 .video-title {
   font-family: var(--font-display);
@@ -1181,6 +1180,29 @@ img { max-width: 100%; display: block; }
 
 .journey-map-wrap:hover .journey-map-img {
   transform: scale(1.02);
+}
+
+.map-expand-hint {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background: rgba(26,23,20,0.75);
+  color: #f5f0e8;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.6rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.journey-map-wrap {
+  position: relative;
+}
+
+.journey-map-wrap:hover .map-expand-hint {
+  opacity: 1;
 }
 
 @media (max-width: 600px) {
