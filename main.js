@@ -43,7 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openMobileNav() {
     nav.classList.add('mobile-open');
-    nav.style.cssText = 'display:flex; flex-direction:column; position:fixed; top:70px; left:0; right:0; background:var(--paper); border-bottom:1px solid var(--paper-dark); padding:1rem 2rem; gap:0.5rem; z-index:99;';
+    nav.style.cssText = 'display:flex; flex-direction:column; position:fixed; top:70px; left:0; right:0; background:var(--paper); border-top:2px solid var(--red); border-bottom:1px solid var(--paper-dark); padding:1.25rem 2rem; gap:0; z-index:99; box-shadow: 0 8px 24px rgba(0,0,0,0.12);';
+    // Style each nav link for mobile
+    nav.querySelectorAll('.nav-link').forEach(l => {
+      l.style.cssText = 'padding:0.85rem 0; border-bottom:1px solid var(--paper-dark); border-radius:0; width:100%;';
+    });
     menuBtn.textContent = '✕';
     menuBtn.setAttribute('aria-label', 'Close menu');
   }
@@ -51,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeMobileNav() {
     nav.classList.remove('mobile-open');
     nav.style.cssText = '';
+    nav.querySelectorAll('.nav-link').forEach(l => { l.style.cssText = ''; });
     menuBtn.textContent = '☰';
     menuBtn.setAttribute('aria-label', 'Menu');
   }
