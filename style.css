@@ -1098,7 +1098,7 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem 0 3rem; }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem 1.5rem 3rem; }
   .hero-timeline-snippet { display: none; }
 }
 
