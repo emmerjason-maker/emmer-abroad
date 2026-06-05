@@ -180,8 +180,13 @@
         <div class="section-rule"></div>
       </div>
       <p class="journey-map-desc">From the Atlantic coast of Jacksonville, FL to United States Fleet Activities Yokosuka, Japan — one family, one giant leap.</p>
-      <div class="journey-map-wrap">
+      <div class="journey-map-wrap" style="cursor:zoom-in;"
+           onclick="document.getElementById('lightbox').classList.add('open');
+                    document.getElementById('lightboxImg').src='images/jax-to-yokosuka-map.png';
+                    document.getElementById('lightboxCaption').textContent='Jacksonville, FL → Yokosuka, Japan — ~7,300 miles, 14+ hours, Chapter 1';
+                    window._lightboxItems=[];window._lightboxIndex=0;">
         <img src="images/jax-to-yokosuka-map.png" alt="Manga-style map showing flight path from Jacksonville FL to Yokosuka Japan" class="journey-map-img" />
+        <div class="map-expand-hint">🔍 Click to expand</div>
       </div>
     </section>
 
