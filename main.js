@@ -114,6 +114,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowLeft')  navigate(-1);
     if (e.key === 'ArrowRight') navigate(1);
   });
+
+  // ── Show post-ad only when AdSense fills it ───────────────────
+  const postAd = document.querySelector('.post-ad');
+  if (postAd) {
+    const adObserver = new MutationObserver(() => {
+      const ins = postAd.querySelector('ins.adsbygoogle');
+      if (ins && ins.getAttribute('data-ad-status') === 'filled') {
+        postAd.classList.add('ad-loaded');
+        adObserver.disconnect();
+      }
+    });
+    adObserver.observe(postAd, { attributes: true, subtree: true, attributeFilter: ['data-ad-status'] });
+  }
 });
 
 // ── Post Image Lightbox ───────────────────────────────────────────
