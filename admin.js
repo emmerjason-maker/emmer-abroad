@@ -1263,7 +1263,7 @@ function showStatus(msg, isError, persist = false) {
 function resetForm() {
   $('postTitle').value    = '';
   $('postBody').innerHTML = '';
-  $('postYoutube').value  = '';
+  ytVideos = []; if ($('ytVideoList')) renderYtVideoList();
   $('postLink').value     = '';
   if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
@@ -1326,20 +1326,42 @@ async function loadPostsList() {
       return;
     }
 
-    list.innerHTML = htmlFiles.map(file => {
-      // Convert slug back to readable title
-      const title = file.name
-        .replace('.html', '')
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
+    // Fetch each post to get real title, date, post number
+    list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
+    const postDetails = await Promise.all(htmlFiles.map(async file => {
+      try {
+        const r = await ghFetch(`contents/posts/${file.name}`);
+        if (!r.ok) return { file, title: file.name, date: '', postNum: '' };
+        const j = await r.json();
+        const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const title = doc.querySelector('.post-entry-title')?.textContent?.trim()
+          || file.name.replace('.html','').replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+        const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
+        const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
+        return { file, title, date, postNum };
+      } catch(e) {
+        return { file, title: file.name, date: '', postNum: '' };
+      }
+    }));
 
-      return `
+    // Sort newest first (by post number descending)
+    postDetails.sort((a, b) => {
+      const na = parseInt(a.postNum.replace('Post #','')) || 0;
+      const nb = parseInt(b.postNum.replace('Post #','')) || 0;
+      return nb - na;
+    });
+
+    list.innerHTML = postDetails.map(({ file, title, date, postNum }) => `
         <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+          <div class="post-list-meta">
+            ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
+            ${date ? `<span class="post-list-date">${date}</span>` : ''}
+          </div>
           <div class="post-list-title">${title}</div>
-          <div class="post-list-slug">${file.name}</div>
           <span class="post-list-arrow">Edit →</span>
-        </div>`;
-    }).join('');
+        </div>`).join('');
 
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
