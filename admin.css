@@ -707,3 +707,47 @@ select.field-input { cursor: pointer; }
   .image-item { grid-template-columns: 56px 1fr auto; }
   .image-thumb { width: 56px; height: 42px; }
 }
+/* ── Multi-YouTube UI ─────────────────────────────────────────── */
+.yt-add-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.yt-video-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.yt-thumb {
+  width: 80px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.yt-video-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yt-video-id {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.yt-video-label {
+  font-size: 0.82rem;
+  color: var(--text);
+}
