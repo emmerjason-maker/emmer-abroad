@@ -642,6 +642,31 @@ select.field-input { cursor: pointer; }
   gap: 0.5rem;
 }
 
+.post-list-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.post-list-num {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background: #c0392b;
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+}
+
+.post-list-date {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: var(--text-muted, #888);
+  letter-spacing: 0.03em;
+}
+
 .post-list-item {
   display: flex;
   align-items: center;
