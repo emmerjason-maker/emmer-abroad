@@ -25,7 +25,6 @@ const $ = id => document.getElementById(id);
 // -- Startup -------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
   $('postDate').value = new Date().toISOString().split('T')[0];
-  if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
 
   const saved = localStorage.getItem('jm_gh_token');
   if (saved) $('loginToken').value = saved;
@@ -245,12 +244,45 @@ function extractYouTubeId(input) {
   return match ? match[1] : null;
 }
 
+// -- Edit form YouTube management ----------------------------------
+function addEditYtVideo() {
+  const input = $('editYtVideoInput').value.trim();
+  const label = $('editYtVideoLabel').value.trim();
+  const id = extractYouTubeId(input);
+  if (!id) { alert('Could not find a valid YouTube video ID in that URL.'); return; }
+  if (editYtVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
+  editYtVideos.push({ id, label });
+  $('editYtVideoInput').value = '';
+  $('editYtVideoLabel').value = '';
+  renderEditYtVideoList();
+}
+
+function removeEditYtVideo(id) {
+  editYtVideos = editYtVideos.filter(v => v.id !== id);
+  renderEditYtVideoList();
+}
+
+function renderEditYtVideoList() {
+  const list = $('editYtVideoList');
+  if (!list) return;
+  if (editYtVideos.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = editYtVideos.map(v => `
+    <div class="yt-video-item">
+      <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="yt-thumb" alt="thumbnail" />
+      <div class="yt-video-meta">
+        <span class="yt-video-id">${v.id}</span>
+        ${v.label ? `<span class="yt-video-label">${escHtml(v.label)}</span>` : ''}
+      </div>
+      <button type="button" class="img-btn remove" onclick="removeEditYtVideo('${v.id}')">✕</button>
+    </div>`).join('');
+}
+
 // -- Preview -------------------------------------------------------
 function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
+  const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim() || linkUrl;
   const fmtDate  = date
@@ -608,12 +640,12 @@ async function handlePublish() {
   const date     = $('postDate').value;
   const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
+  const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
   if (!title) { alert('Please add a post title.'); return; }
-  if (!body && ytVideos.length === 0 && images.length === 0) {
+  if (!body && !ytId && images.length === 0) {
     alert('Please add some content - body text, a video, or at least one photo.'); return;
   }
 
@@ -1191,7 +1223,7 @@ function showStatus(msg, isError, persist = false) {
 function resetForm() {
   $('postTitle').value    = '';
   $('postBody').innerHTML = '';
-  ytVideos = []; renderYtVideoList();
+  $('postYoutube').value  = '';
   $('postLink').value     = '';
   if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
@@ -1311,10 +1343,25 @@ async function loadPostForEditing(filename, sha) {
       }
     }
 
+    // Parse existing YouTube videos from post
+    editYtVideos = [];
+    const iframes = doc.querySelectorAll('.post-video iframe');
+    iframes.forEach(iframe => {
+      const src = iframe.getAttribute('src') || '';
+      const idMatch = src.match(/embed\/([a-zA-Z0-9_-]{11})/);
+      if (idMatch) {
+        const vidId = idMatch[1];
+        const caption = iframe.closest('.post-video')?.querySelector('.video-caption')?.textContent?.trim() || '';
+        const label = caption === 'Watch on YouTube →' ? '' : caption;
+        editYtVideos.push({ id: vidId, label });
+      }
+    });
+
     // Populate edit form
     $('editTitle').value = title;
     $('editBody').innerHTML = bodyHtml;
     if ($('editLocation')) $('editLocation').value = existingLocation;
+    renderEditYtVideoList();
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Show edit form, hide list
@@ -1405,6 +1452,27 @@ async function savePostEdit(filename, originalHtml) {
       /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
       `$1\n        ${newBody}\n      $3`
     );
+
+    // Replace YouTube video blocks
+    const newVideoHtml = editYtVideos.map(v => `
+      <div class="post-video">
+        <div class="video-embed-wrap">
+          <iframe src="https://www.youtube.com/embed/${v.id}" title="${escHtml(v.label || newTitle)}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        ${v.label ? `<p class="video-caption">${escHtml(v.label)}</p>` : '<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>'}
+      </div>`).join('\n');
+
+    // Remove all existing video blocks and insert new ones before post-body
+    updated = updated.replace(/<div class="post-video">[\s\S]*?<\/div>\s*<\/div>/g, '');
+    if (newVideoHtml) {
+      updated = updated.replace(
+        /(<div class="post-body">)/,
+        newVideoHtml + '\n      $1'
+      );
+    }
 
     // Re-fetch latest SHA before pushing (prevents stale SHA error on repeated edits)
     const latestRes = await ghFetch(`contents/posts/${filename}`);
