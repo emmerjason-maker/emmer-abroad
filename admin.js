@@ -1460,7 +1460,7 @@ async function loadPostForEditing(filename, sha) {
       `;
     };
 
-    $('saveEditBtn').onclick = () => savePostEdit(filename, html);
+    $('saveEditBtn').onclick = () => savePostEdit(filename);
 
     $('statusBar').classList.add('hidden');
 
@@ -1470,19 +1470,34 @@ async function loadPostForEditing(filename, sha) {
 }
 
 // -- Save edited post ------------------------------------------
-async function savePostEdit(filename, originalHtml) {
+async function savePostEdit(filename) {
   const newTitle    = $('editTitle').value.trim();
   const newBody     = $('editBody').innerHTML.trim();
   const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
+  // Guard: refuse to save if body editor is empty
+  if (!newBody || !newBody.trim() || newBody.trim() === '<br>') {
+    alert('Body appears empty — not saving to protect your content. If you only changed videos or photos, please add a space to the body and remove it to confirm it loaded correctly.');
+    return;
+  }
+
   $('saveEditLabel').textContent = 'Saving…';
   $('saveEditBtn').disabled = true;
   showStatus('Saving changes…', false, true);
 
   try {
-    // Preserve existing prev/next post link from the original HTML
+    // Always re-fetch the LATEST version of the post from GitHub
+    // This prevents stale originalHtml from corrupting the post
+    showStatus('Fetching latest post version…', false, true);
+    const latestFetch = await ghFetch(`contents/posts/${filename}`);
+    if (!latestFetch.ok) throw new Error('Could not fetch latest post');
+    const latestJson = await latestFetch.json();
+    const originalHtml = decodeURIComponent(escape(atob(latestJson.content.replace(/\n/g, ''))));
+    editingFileSha = latestJson.sha;
+
+    // Parse existing next-post link to preserve it
     const parser2 = new DOMParser();
     const origDoc = parser2.parseFromString(originalHtml, 'text/html');
     const existingNextLink = origDoc.querySelector('.post-entry-footer .read-more:not([href="../blog.html"])');
@@ -1526,16 +1541,15 @@ async function savePostEdit(filename, originalHtml) {
       );
     }
 
-    // Replace body content using DOM to avoid regex wiping content
-    if (newBody && newBody.trim()) {
-      updated = updated.replace(
-        /(<div class="post-body">)([\s\S]*?)(<\/div>\s*(?=<footer|<div class="related|<div class="post-comments))/,
-        `$1\n        ${newBody}\n      $3`
-      );
-    }
-    // Safety check — if post-body still empty after replacement, something went wrong
-    if (!updated.includes('class="post-body"') || updated.match(/<div class="post-body">\s*<\/div>/)) {
-      throw new Error('Body replacement failed — aborting to protect post content.');
+    // Replace body using DOM parser — much safer than regex
+    const saveParser = new DOMParser();
+    const saveDoc = saveParser.parseFromString(updated, 'text/html');
+    const saveBodyEl = saveDoc.querySelector('.post-body');
+    if (saveBodyEl) {
+      saveBodyEl.innerHTML = '\n        ' + newBody + '\n      ';
+      updated = '<!DOCTYPE html>\n' + saveDoc.documentElement.outerHTML;
+    } else {
+      throw new Error('Could not find post-body in HTML — aborting to protect content.');
     }
 
     // Upload any new photos and rebuild photo HTML
@@ -1601,13 +1615,6 @@ async function savePostEdit(filename, originalHtml) {
         /(<div class="post-body">)/,
         newVideoHtml + '\n      $1'
       );
-    }
-
-    // Re-fetch latest SHA before pushing (prevents stale SHA error on repeated edits)
-    const latestRes = await ghFetch(`contents/posts/${filename}`);
-    if (latestRes.ok) {
-      const latestJson = await latestRes.json();
-      editingFileSha = latestJson.sha;
     }
 
     // Push to GitHub
