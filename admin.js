@@ -772,8 +772,8 @@ async function handlePublish() {
     // 11. Update Search Index
     showStatus('Updating search index…', false, true);
     const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
-    const plainText = $('postBody').innerText.trim();
-    const excerpt = plainText.length > 140 ? plainText.substring(0, 140).replace(/\s+\S*$/, '') + '…' : plainText;
+    const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
+    await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
     await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
 
     showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
