@@ -24,29 +24,35 @@ const $ = id => document.getElementById(id);
 
 // ── Startup ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  $('postDate').value = new Date().toISOString().split('T')[0];
+  bindEvents();
+
+  if ($('postDate')) {
+    $('postDate').value = new Date().toISOString().split('T')[0];
+  }
 
   const saved = localStorage.getItem('jm_gh_token');
-  if (saved) $('loginToken').value = saved;
+  if (saved && $('loginToken')) $('loginToken').value = saved;
 
   if (sessionStorage.getItem('jm_authed') === '1') {
     githubToken = localStorage.getItem('jm_gh_token') || '';
     showAdmin();
   }
-
-  bindEvents();
 });
 
 // ── Events ────────────────────────────────────────────────────────
 function bindEvents() {
   // Login
-  $('loginBtn').addEventListener('click', handleLogin);
+  const loginBtn = $('loginBtn');
+  if (loginBtn) loginBtn.addEventListener('click', handleLogin);
+
   ['loginPassword', 'loginToken'].forEach(id =>
-    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); })
-  );
+    const el = $(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+  });
 
   // Logout
-  $('logoutBtn').addEventListener('click', () => {
+  const logoutBtn = $('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', () => {
     sessionStorage.removeItem('jm_authed');
     location.reload();
   });
@@ -57,25 +63,32 @@ function bindEvents() {
   );
 
   // Primary photo input (drop zone)
-  $('photoInput').addEventListener('change', e => addFiles(e.target.files));
-  $('photoInputMore').addEventListener('change', e => addFiles(e.target.files));
+  if ($('photoInput')) $('photoInput').addEventListener('change', e => addFiles(e.target.files));
+  if ($('photoInputMore')) $('photoInputMore').addEventListener('change', e => addFiles(e.target.files));
 
   // Drag & drop on zone
   const zone = $('uploadZone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('drag-over');
-    addFiles(e.dataTransfer.files);
-  });
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      addFiles(e.dataTransfer.files);
+    });
+  }
 
-  $('previewBtn').addEventListener('click', renderPreview);
-  $('publishBtn').addEventListener('click', handlePublish);
+  if ($('previewBtn')) $('previewBtn').addEventListener('click', renderPreview);
+  if ($('publishBtn')) $('publishBtn').addEventListener('click', handlePublish);
 }
 
 // ── Login ─────────────────────────────────────────────────────────
 async function handleLogin() {
+  if (!window.crypto || !crypto.subtle) {
+    alert('Security Error: Password hashing requires a secure context (HTTPS or localhost). If you are testing locally, ensure you are using http://localhost.');
+    return;
+  }
+
   const pw    = $('loginPassword').value.trim();
   const token = $('loginToken').value.trim();
 
