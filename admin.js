@@ -45,7 +45,7 @@ function bindEvents() {
   const loginBtn = $('loginBtn');
   if (loginBtn) loginBtn.addEventListener('click', handleLogin);
 
-  ['loginPassword', 'loginToken'].forEach(id =>
+['loginPassword', 'loginToken'].forEach(id => {
     const el = $(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
   });
