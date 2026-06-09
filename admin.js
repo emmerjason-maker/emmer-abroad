@@ -1,10 +1,10 @@
-/* ===============================================================
-   Japan Move - Admin Panel JS
+/* ═══════════════════════════════════════════════════════════════
+   Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
-   =============================================================== */
+   ═══════════════════════════════════════════════════════════════ */
 
-// -- Config --------------------------------------------------------
-// Password stored as SHA-256 hash - plain text never in source
+// ── Config ────────────────────────────────────────────────────────
+// Password stored as SHA-256 hash — plain text never in source
 const CONFIG = {
   passwordHash: 'b181ca2307e6900f3d218dcabd221d64d0296cffbac6fa70a89815e67a3a49b1',  // SHA-256 of password
   owner:     'emmerjason-maker',
@@ -15,18 +15,14 @@ const CONFIG = {
   maxSizeMB: 5,
 };
 
-// -- State ---------------------------------------------------------
+// ── State ─────────────────────────────────────────────────────────
 // images = array of { id, file, dataUrl, name, caption }
-let images       = [];
-let ytVideos     = []; // { id, label } for new post
-let editYtVideos = []; // { id, label } for edit form
-let editPhotos   = []; // { src, caption, isNew, file?, dataUrl? }
-let editBodyHtml = ''; // original body backup for edit form
-let githubToken  = null;
+let images      = [];
+let githubToken = null;
 
 const $ = id => document.getElementById(id);
 
-// -- Startup -------------------------------------------------------
+// ── Startup ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   $('postDate').value = new Date().toISOString().split('T')[0];
 
@@ -41,19 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
 });
 
-// -- Events --------------------------------------------------------
+// ── Events ────────────────────────────────────────────────────────
 function bindEvents() {
   // Login
   $('loginBtn').addEventListener('click', handleLogin);
   ['loginPassword', 'loginToken'].forEach(id =>
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); })
   );
-
-  // New post YouTube add button
-  if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
-  // Edit form YouTube add button
-  if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
-  if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
 
   // Logout
   $('logoutBtn').addEventListener('click', () => {
@@ -84,7 +74,7 @@ function bindEvents() {
   $('publishBtn').addEventListener('click', handlePublish);
 }
 
-// -- Login ---------------------------------------------------------
+// ── Login ─────────────────────────────────────────────────────────
 async function handleLogin() {
   const pw    = $('loginPassword').value.trim();
   const token = $('loginToken').value.trim();
@@ -112,7 +102,7 @@ function showAdmin() {
   $('adminPanel').classList.remove('hidden');
 }
 
-// -- Toolbar -------------------------------------------------------
+// ── Toolbar ───────────────────────────────────────────────────────
 function handleToolbar(action) {
   $('postBody').focus();
   if (action === 'bold')   { document.execCommand('bold');            return; }
@@ -134,7 +124,7 @@ function handleToolbar(action) {
   }
 }
 
-// -- Multi-image handling ------------------------------------------
+// ── Multi-image handling ──────────────────────────────────────────
 function addFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   const remaining = CONFIG.maxImages - images.length;
@@ -243,7 +233,7 @@ function renderImageList() {
   );
 }
 
-// -- YouTube ID extraction -----------------------------------------
+// ── YouTube ID extraction ─────────────────────────────────────────
 function extractYouTubeId(input) {
   if (!input) return null;
   input = input.trim();
@@ -254,120 +244,12 @@ function extractYouTubeId(input) {
   return match ? match[1] : null;
 }
 
-// -- Edit form YouTube management ----------------------------------
-function addEditYtVideo() {
-  const input = $('editYtVideoInput').value.trim();
-  const label = $('editYtVideoLabel').value.trim();
-  const id = extractYouTubeId(input);
-  if (!id) { alert('Could not find a valid YouTube video ID in that URL.'); return; }
-  if (editYtVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
-  editYtVideos.push({ id, label });
-  $('editYtVideoInput').value = '';
-  $('editYtVideoLabel').value = '';
-  renderEditYtVideoList();
-}
-
-function removeEditYtVideo(id) {
-  editYtVideos = editYtVideos.filter(v => v.id !== id);
-  renderEditYtVideoList();
-}
-
-function renderEditYtVideoList() {
-  const list = $('editYtVideoList');
-  if (!list) return;
-  if (editYtVideos.length === 0) { list.innerHTML = ''; return; }
-  list.innerHTML = editYtVideos.map(v => `
-    <div class="yt-video-item">
-      <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="yt-thumb" alt="thumbnail" />
-      <div class="yt-video-meta">
-        <span class="yt-video-id">${v.id}</span>
-        ${v.label ? `<span class="yt-video-label">${escHtml(v.label)}</span>` : ''}
-      </div>
-      <button type="button" class="img-btn remove" onclick="removeEditYtVideo('${v.id}')">✕</button>
-    </div>`).join('');
-}
-
-// -- Edit form Photo management ------------------------------------
-function handleEditPhotoAdd(e) {
-  const files = Array.from(e.target.files);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      editPhotos.push({ src: ev.target.result, caption: '', isNew: true, file, dataUrl: ev.target.result });
-      renderEditPhotoList();
-    };
-    reader.readAsDataURL(file);
-  });
-  e.target.value = '';
-}
-
-function removeEditPhoto(idx) {
-  editPhotos.splice(idx, 1);
-  renderEditPhotoList();
-}
-
-function renderEditPhotoList() {
-  const list = $('editPhotoList');
-  if (!list) return;
-  if (editPhotos.length === 0) {
-    list.innerHTML = '<p class="field-hint" style="margin:0 0 0.5rem;">No photos yet.</p>';
-    return;
-  }
-  list.innerHTML = editPhotos.map((p, i) => `
-    <div class="yt-video-item" style="align-items:flex-start;margin-bottom:0.5rem;">
-      <img src="${p.src}" style="width:80px;height:60px;object-fit:cover;border-radius:2px;flex-shrink:0;" alt="photo" />
-      <div class="yt-video-meta" style="flex:1;">
-        <span class="yt-video-id">${p.isNew ? 'New upload' : decodeURIComponent(p.src.split('/').pop()).substring(0,35)}</span>
-        <input type="text" class="field-input" placeholder="Caption (optional)"
-          style="margin-top:4px;padding:4px 8px;font-size:0.78rem;"
-          value="${escHtml(p.caption || '')}"
-          onchange="editPhotos[${i}].caption = this.value" />
-      </div>
-      <button type="button" class="img-btn remove" onclick="removeEditPhoto(${i})" title="Remove">✕</button>
-    </div>`).join('');
-}
-
-// -- Multi-YouTube management (new post) ---------------------------
-function addYtVideo() {
-  const input = $('ytVideoInput') ? $('ytVideoInput').value.trim() : '';
-  const label = $('ytVideoLabel') ? $('ytVideoLabel').value.trim() : '';
-  const id = extractYouTubeId(input);
-  if (!id) { alert('Could not find a valid YouTube video ID in that URL.'); return; }
-  if (ytVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
-  ytVideos.push({ id, label });
-  if ($('ytVideoInput')) $('ytVideoInput').value = '';
-  if ($('ytVideoLabel')) $('ytVideoLabel').value = '';
-  renderYtVideoList();
-  renderPreview();
-}
-
-function removeYtVideo(id) {
-  ytVideos = ytVideos.filter(v => v.id !== id);
-  renderYtVideoList();
-  renderPreview();
-}
-
-function renderYtVideoList() {
-  const list = $('ytVideoList');
-  if (!list) return;
-  if (ytVideos.length === 0) { list.innerHTML = ''; return; }
-  list.innerHTML = ytVideos.map(v => `
-    <div class="yt-video-item">
-      <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="yt-thumb" alt="thumbnail" />
-      <div class="yt-video-meta">
-        <span class="yt-video-id">${v.id}</span>
-        ${v.label ? `<span class="yt-video-label">${escHtml(v.label)}</span>` : ''}
-      </div>
-      <button type="button" class="img-btn remove" onclick="removeYtVideo('${v.id}')">✕</button>
-    </div>`).join('');
-}
-
-// -- Preview -------------------------------------------------------
+// ── Preview ───────────────────────────────────────────────────────
 function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
+  const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim() || linkUrl;
   const fmtDate  = date
@@ -421,19 +303,18 @@ function renderPreview() {
   }
 }
 
-// -- Count existing posts -----------------------------------------
+// ── Count existing posts ─────────────────────────────────────────
 function countExistingPosts(html) {
   const matches = html.match(/class="post-index-card"/g);
   return matches ? matches.length : 0;
 }
 
-// -- Build post HTML for blog.html ---------------------------------
+// ── Build post HTML for blog.html ─────────────────────────────────
 function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkText, postNumber }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
   const tag = `Post #${postNumber}`;
-  const category = ($('postCategory') ? $('postCategory').value : 'PCS') || 'PCS';
 
   // Video block
   let videoBlock = '';
@@ -457,7 +338,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
   let galleryBlock = '';
   if (uploadedImages && uploadedImages.length > 0) {
     if (uploadedImages.length === 1) {
-      // Single image - use figure
+      // Single image — use figure
       const img = uploadedImages[0];
       galleryBlock = `
       <figure class="post-photo">
@@ -465,7 +346,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
         ${img.caption ? `<figcaption>${escHtml(img.caption)}</figcaption>` : ''}
       </figure>`;
     } else {
-      // Multiple images - gallery grid
+      // Multiple images — gallery grid
       const gridClass = uploadedImages.length === 2 ? 'gallery-2'
                       : uploadedImages.length === 3 ? 'gallery-3'
                       : 'gallery-many';
@@ -487,7 +368,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
   }
 
   return `
-    <!-- ====== POST: ${escHtml(title)} - ${fmtDate} ====== -->
+    <!-- ====== POST: ${escHtml(title)} — ${fmtDate} ====== -->
     <article class="post-entry">
 
       <header class="post-entry-header">
@@ -525,7 +406,7 @@ ${videoBlock}${galleryBlock}
 
 
 
-// -- Build individual post page HTML ------------------------------
+// ── Build individual post page HTML ──────────────────────────────
 function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
@@ -536,7 +417,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
     ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
     : '';
 
-  // Build location HTML - supports plain text, URL, or "Label | URL" format
+  // Build location HTML — supports plain text, URL, or "Label | URL" format
   let locationHtml = '';
   if (location) {
     if (location.startsWith('http') || location.startsWith('maps.')) {
@@ -589,7 +470,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escHtml(title)} - Emmerican Adventure</title>
+  <title>${escHtml(title)} — Emmerican Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -602,7 +483,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   <link rel="canonical" href="https://emmericanadventure.com/posts/${slug}.html" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Emmerican Adventure" />
-  <meta property="og:title" content="${escHtml(title)} - Emmerican Adventure" />
+  <meta property="og:title" content="${escHtml(title)} — Emmerican Adventure" />
   <meta property="og:description" content="${escHtml(plainExcerpt)}" />
   <meta property="og:url" content="https://emmericanadventure.com/posts/${slug}.html" />
   ${imgSrc ? `<meta property="og:image" content="https://emmericanadventure.com/${escHtml(imgSrc)}" />` : ''}
@@ -664,7 +545,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       </div>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
-        ${prevPostHtml}
+        \${prevPostHtml}
       </footer>
       <div class="post-comments">
         <div id="disqus_thread"></div>
@@ -690,7 +571,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         <span class="footer-kanji">日本へ</span>
         <span class="footer-name">Emmerican Adventure</span>
       </div>
-      <div class="footer-copy">© 2026 Emmerican Adventure - Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
       <div class="footer-links">
         <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
       </div>
@@ -702,7 +583,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 }
 
 
-// -- Update publish button label based on date -----------------
+// ── Update publish button label based on date ─────────────────
 function updatePublishLabel() {
   const date = $('postDate').value;
   const label = $('publishLabel');
@@ -713,26 +594,26 @@ function updatePublishLabel() {
     label.textContent = 'Publish Post →';
   }
 }
-// -- Generate URL slug from title ---------------------------------
+// ── Generate URL slug from title ─────────────────────────────────
 function slugify(title) {
   return title.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
 
-// -- Publish -------------------------------------------------------
+// ── Publish ───────────────────────────────────────────────────────
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
+  const ytId     = extractYouTubeId($('postYoutube').value.trim());
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
   if (!title) { alert('Please add a post title.'); return; }
-  if (!body && ytVideos.length === 0 && images.length === 0) {
-    alert('Please add some content - body text, a video, or at least one photo.'); return;
+  if (!body && !ytId && images.length === 0) {
+    alert('Please add some content — body text, a video, or at least one photo.'); return;
   }
 
   // Check if post is scheduled (future date)
@@ -744,76 +625,18 @@ async function handlePublish() {
   try {
     const slug = slugify(title);
 
-    // 1. Upload all images to GitHub (compressed)
+    // 1. Upload all images to GitHub
     const uploadedImages = [];
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
-      showStatus(`Optimizing & uploading photo ${i + 1} of ${images.length}…`, false, true);
-      const safeName = img.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
+      showStatus(`Uploading photo ${i + 1} of ${images.length}…`, false, true);
+      const safeName = img.name.replace(/\s+/g, '-').toLowerCase();
       const path = `images/${Date.now()}-${safeName}`;
-      // Compress via canvas, preserving EXIF orientation
-      const compressed = await new Promise((resolve) => {
-        // Read EXIF orientation from raw file bytes
-        const getOrientation = (dataUrl) => {
-          try {
-            const bin = atob(dataUrl.split(',')[1]);
-            const view = new DataView(new ArrayBuffer(bin.length));
-            for (let i = 0; i < bin.length; i++) view.setUint8(i, bin.charCodeAt(i));
-            if (view.getUint16(0, false) !== 0xFFD8) return 1;
-            let offset = 2;
-            while (offset < view.byteLength) {
-              if (view.getUint16(offset, false) === 0xFFE1) {
-                if (view.getUint32(offset += 2, false) !== 0x45786966) return 1;
-                const little = view.getUint16(offset += 6, false) === 0x4949;
-                offset += view.getUint32(offset + 4, little);
-                const tags = view.getUint16(offset, little);
-                offset += 2;
-                for (let i = 0; i < tags; i++) {
-                  if (view.getUint16(offset + (i * 12), little) === 0x0112)
-                    return view.getUint16(offset + (i * 12) + 8, little);
-                }
-              } else if ((view.getUint16(offset, false) & 0xFF00) !== 0xFF00) break;
-              else offset += view.getUint16(offset + 2, false) + 2;
-            }
-          } catch(e) {}
-          return 1;
-        };
-
-        const orientation = getOrientation(img.dataUrl);
-        const image = new Image();
-        image.onload = () => {
-          const maxW = 1600;
-          let w = image.width, h = image.height;
-          // Swap dimensions for 90/270 degree rotations
-          const rotated = orientation >= 5 && orientation <= 8;
-          let tw = rotated ? h : w, th = rotated ? w : h;
-          if (tw > maxW) { th = Math.round(th * maxW / tw); tw = maxW; }
-          const canvas = document.createElement('canvas');
-          canvas.width = tw; canvas.height = th;
-          const ctx = canvas.getContext('2d');
-          // Apply orientation transform
-          switch (orientation) {
-            case 2: ctx.transform(-1, 0, 0, 1, tw, 0); break;
-            case 3: ctx.transform(-1, 0, 0, -1, tw, th); break;
-            case 4: ctx.transform(1, 0, 0, -1, 0, th); break;
-            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-            case 6: ctx.transform(0, 1, -1, 0, th, 0); break;
-            case 7: ctx.transform(0, -1, -1, 0, th, tw); break;
-            case 8: ctx.transform(0, -1, 1, 0, 0, tw); break;
-          }
-          // Scale to fit
-          const scaleW = rotated ? h / image.height * th / h : tw / w;
-          const scaleH = rotated ? w / image.width * tw / w : th / h;
-          ctx.drawImage(image, 0, 0, image.width * scaleW, image.height * scaleH);
-          resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
-        };
-        image.src = img.dataUrl;
-      });
-      await uploadFile(path, compressed);
+      await uploadFile(path, img.dataUrl.split(',')[1]);
       uploadedImages.push({ path, caption: img.caption });
     }
 
-    // 1b. Sanitize post body - strip inline styles/fonts from editor paste
+    // 1b. Sanitize post body — strip inline styles/fonts from editor paste
     const bodyEditor = $('postBody');
     if (bodyEditor) {
       // Remove all style attributes from body content
@@ -898,7 +721,7 @@ async function handlePublish() {
     </article>`;
 
     // 6. Insert card at top of blog.html
-    const cardMarker = '<!-- ====== NEW POST INDEX CARD - COPY FROM HERE ====== -->';
+    const cardMarker = '<!-- ====== NEW POST INDEX CARD — COPY FROM HERE ====== -->';
     let updatedBlog;
     if (blogContent.includes(cardMarker)) {
       updatedBlog = blogContent.replace(cardMarker, cardMarker + newCard);
@@ -929,17 +752,16 @@ async function handlePublish() {
       await updatePhotoGrids({ title, uploadedImages });
     }
 
-    // 10. Update search index
-    showStatus('Updating search index…', false, true);
-    await updateSearchIndex({ title, slug, date, category, uploadedImages, body });
-
-    // 11. Update related posts on existing posts
-    showStatus('Updating related posts…', false, true);
-    await updateRelatedPosts({ title, slug, date, category, uploadedImages });
-
-    // 12. Update sitemap
+    // 10. Update sitemap
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
+
+    // 11. Update Search Index
+    showStatus('Updating search index…', false, true);
+    const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
+    const plainText = $('postBody').innerText.trim();
+    const excerpt = plainText.length > 140 ? plainText.substring(0, 140).replace(/\s+\S*$/, '') + '…' : plainText;
+    await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
 
     showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
@@ -954,46 +776,39 @@ async function handlePublish() {
 
 
 
-// -- Update sitemap.xml -------------------------------------------
+// ── Update sitemap.xml ───────────────────────────────────────────
 async function updateSitemap({ slug, date }) {
   try {
     const today = date || new Date().toISOString().split('T')[0];
-    const newUrl = `https://emmericanadventure.com/posts/${slug}.html`;
+    const postUrl = `https://emmericanadventure.com/posts/${slug}.html`;
 
     // Fetch current sitemap
     const fileRes = await ghFetch('contents/sitemap.xml');
     if (!fileRes.ok) throw new Error('Could not fetch sitemap.xml');
     const fileJson = await fileRes.json();
-    const currentXml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    let xml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
     const sha = fileJson.sha;
 
-    // Check if URL already exists
-    if (currentXml.includes(newUrl)) return;
-
-    // Insert new URL entry before closing </urlset>
-    // Also update lastmod on homepage and blog entries
-    const newEntry = `
+    if (xml.includes(postUrl)) {
+      // Update existing entry lastmod
+      const regex = new RegExp(`(<loc>${postUrl}</loc>\\s*<lastmod>).*?(</lastmod>)`, 's');
+      xml = xml.replace(regex, `$1${today}$2`);
+    } else {
+      // Insert new URL entry before closing </urlset>
+      const newEntry = `
   <url>
-    <loc>${newUrl}</loc>
+    <loc>${postUrl}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
 </urlset>`;
-
-    const updatedXml = currentXml
-      .replace(/<loc>https:\/\/emmericanadventure\.com\/<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
-               `<loc>https://emmericanadventure.com/</loc>
-    <lastmod>${today}</lastmod>`)
-      .replace(/<loc>https:\/\/emmericanadventure\.com\/blog\.html<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
-               `<loc>https://emmericanadventure.com/blog.html</loc>
-    <lastmod>${today}</lastmod>`)
-      .replace('</urlset>', newEntry);
+      xml = xml.replace('</urlset>', newEntry);
+    }
 
     await ghFetch('contents/sitemap.xml', 'PUT', {
       message: `Update sitemap: add ${slug}`,
-      content: btoa(unescape(encodeURIComponent(updatedXml))),
+      content: btoa(unescape(encodeURIComponent(xml))),
       sha,
       branch: CONFIG.branch,
     });
@@ -1002,14 +817,49 @@ async function updateSitemap({ slug, date }) {
   }
 }
 
-// -- Update homepage featured post --------------------------------
+// ── Update search index in search.html ───────────────────────────
+async function updateSearchIndex({ slug, title, date, excerpt, tag, img, keywords }) {
+  try {
+    const fileRes = await ghFetch('contents/search.html');
+    if (!fileRes.ok) return;
+    const fileJson = await fileRes.json();
+    let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+
+    if (html.includes(`slug: '${slug}'`)) return;
+
+    const newEntry = `      {
+        slug: '${slug}',
+        title: '${title}',
+        excerpt: '${excerpt}',
+        date: '${date}',
+        tag: '${tag}',
+        img: '${img}',
+        keywords: '${keywords}'
+      },
+    ];`;
+
+    const updatedHtml = html.replace('];', newEntry);
+
+    await ghFetch('contents/search.html', 'PUT', {
+      message: `Update search index: ${slug}`,
+      content: btoa(unescape(encodeURIComponent(updatedHtml))),
+      sha,
+      branch: CONFIG.branch,
+    });
+  } catch (err) {
+    console.warn('Could not update search index:', err.message);
+  }
+}
+
+// ── Update homepage featured post ────────────────────────────────
 async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug }) {
   try {
     const fmtDate = date
       ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
       : '';
 
-    // Pick the best image - first uploaded image or a YouTube thumbnail
+    // Pick the best image — first uploaded image or a YouTube thumbnail
     let imgSrc = '';
     if (uploadedImages && uploadedImages.length > 0) {
       imgSrc = uploadedImages[0].path;
@@ -1084,7 +934,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
 }
 
 
-// -- Update photo grids on index.html and photos.html -------------
+// ── Update photo grids on index.html and photos.html ─────────────
 async function updatePhotoGrids({ title, uploadedImages }) {
   try {
     if (!uploadedImages || uploadedImages.length === 0) return;
@@ -1092,11 +942,12 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     const newItems = uploadedImages.map(img => `
         <div class="photo-item" data-caption="${escHtml(title)}">
           <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
-        </div>`).join('\n');
+        </div>`).join('
+');
 
     const marker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
 
-    // -- Update index.html (keep 6 most recent) --------------------
+    // ── Update index.html (keep 6 most recent) ────────────────────
     const indexRes = await ghFetch('contents/index.html');
     if (!indexRes.ok) throw new Error('Could not fetch index.html');
     const indexJson = await indexRes.json();
@@ -1129,7 +980,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
       });
     }
 
-    // -- Update photos.html (keep all) ----------------------------
+    // ── Update photos.html (keep all) ────────────────────────────
     const photosRes = await ghFetch('contents/photos.html');
     if (!photosRes.ok) throw new Error('Could not fetch photos.html');
     const photosJson = await photosRes.json();
@@ -1151,128 +1002,13 @@ async function updatePhotoGrids({ title, uploadedImages }) {
   }
 }
 
-
-// -- Update search index in search.html ---------------------------
-async function updateSearchIndex({ title, slug, date, category, uploadedImages, body }) {
-  try {
-    const searchRes = await ghFetch('contents/search.html');
-    if (!searchRes.ok) return;
-    const searchJson = await searchRes.json();
-    const searchHtml = decodeURIComponent(escape(atob(searchJson.content.replace(/\n/g, ''))));
-    const searchSha = searchJson.sha;
-
-    const plainBody = body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-    const excerpt = plainBody.substring(0, 120) + (plainBody.length > 120 ? '…' : '');
-    const keywords = [title, category, ...plainBody.split(' ').slice(0, 20)].join(' ').toLowerCase();
-    const img = (uploadedImages && uploadedImages.length > 0)
-      ? `images/${uploadedImages[0].path.split('/').pop()}`
-      : 'images/og-image.jpg';
-
-    const newEntry = `      {
-        slug: '${slug.replace(/'/g,"\\'")}',
-        title: '${title.replace(/'/g,"\\'")}',
-        excerpt: '${excerpt.replace(/'/g,"\\'").replace(/\n/g,' ')}',
-        date: '${date}',
-        tag: '${category}',
-        img: '${img}',
-        keywords: '${keywords.replace(/'/g,"\\'")}',
-      },`;
-
-    const marker = 'const POSTS = [';
-    if (searchHtml.includes(marker)) {
-      const updated = searchHtml.replace(marker, marker + '\n' + newEntry);
-      await ghFetch('contents/search.html', 'PUT', {
-        message: `feat: add ${title} to search index`,
-        content: btoa(unescape(encodeURIComponent(updated))),
-        sha: searchSha,
-        branch: CONFIG.branch,
-      });
-    }
-  } catch (err) {
-    console.warn('Could not update search index:', err.message);
-  }
-}
-
-// -- Auto-update related posts on existing post files -------------
-async function updateRelatedPosts({ title, slug, date, category, uploadedImages }) {
-  try {
-    const blogRes = await ghFetch('contents/blog.html');
-    if (!blogRes.ok) return;
-    const blogJson = await blogRes.json();
-    const blogHtml = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
-
-    const slugMatches = [...blogHtml.matchAll(/href="posts\/([^"]+)\.html"/g)];
-    const existingSlugs = slugMatches.map(m => m[1]).filter(s => s !== slug).slice(0, 4);
-    if (existingSlugs.length === 0) return;
-
-    const img = (uploadedImages && uploadedImages.length > 0)
-      ? `../images/${uploadedImages[0].path.split('/').pop()}`
-      : '../images/og-image.jpg';
-
-    const newCard = `        <a href="../posts/${slug}.html" class="related-card">
-          <div class="related-card-img"><img src="${img}" alt="${escHtml(title)}" loading="lazy" /></div>
-          <div class="related-card-body">
-            <div class="post-meta"><span class="post-tag">${escHtml(category)}</span><span class="post-date">${escHtml(date)}</span></div>
-            <div class="related-card-title">${escHtml(title)}</div>
-          </div>
-        </a>`;
-
-    for (const existingSlug of existingSlugs) {
-      try {
-        const postRes = await ghFetch(`contents/posts/${existingSlug}.html`);
-        if (!postRes.ok) continue;
-        const postJson = await postRes.json();
-        let postHtml = decodeURIComponent(escape(atob(postJson.content.replace(/\n/g, ''))));
-        const postSha = postJson.sha;
-
-        const gridStart = postHtml.indexOf('<div class="related-grid">');
-        if (gridStart === -1) continue;
-        const gridEnd = postHtml.indexOf('</div>', gridStart) + 6;
-        const gridContent = postHtml.substring(gridStart, gridEnd);
-        const cardCount = (gridContent.match(/class="related-card"/g) || []).length;
-
-        let newGrid;
-        if (cardCount >= 2) {
-          const lastIdx = gridContent.lastIndexOf('<a href="../posts/');
-          newGrid = '<div class="related-grid">\n' + newCard + '\n' + gridContent.substring('<div class="related-grid">\n'.length, lastIdx) + '\n        </div>';
-        } else {
-          newGrid = gridContent.replace('<div class="related-grid">', '<div class="related-grid">\n' + newCard);
-        }
-
-        postHtml = postHtml.substring(0, gridStart) + newGrid + postHtml.substring(gridEnd);
-        await ghFetch(`contents/posts/${existingSlug}.html`, 'PUT', {
-          message: `feat: add ${title} to related posts`,
-          content: btoa(unescape(encodeURIComponent(postHtml))),
-          sha: postSha,
-          branch: CONFIG.branch,
-        });
-      } catch(e) { console.warn('related posts error:', e.message); }
-    }
-  } catch (err) {
-    console.warn('Could not update related posts:', err.message);
-  }
-}
-
-// -- GitHub helpers ------------------------------------------------
+// ── GitHub helpers ────────────────────────────────────────────────
 async function uploadFile(path, base64Content) {
-  // Auto-fetch existing SHA so re-publishing or re-uploading never fails
-  let sha;
-  try {
-    const existing = await ghFetch(`contents/${path}`);
-    if (existing.ok) {
-      const data = await existing.json();
-      sha = data.sha;
-    }
-  } catch(e) { /* new file, no SHA needed */ }
-
-  const body = {
+  const res = await ghFetch(`contents/${path}`, 'PUT', {
     message: `Upload: ${path}`,
     content: base64Content,
     branch: CONFIG.branch,
-  };
-  if (sha) body.sha = sha;
-
-  const res = await ghFetch(`contents/${path}`, 'PUT', body);
+  });
   if (!res.ok) {
     const err = await res.json();
     throw new Error(`Upload failed for ${path}: ${err.message || res.status}`);
@@ -1292,7 +1028,7 @@ function ghFetch(endpoint, method = 'GET', body = null) {
   return fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/${endpoint}`, opts);
 }
 
-// -- UI helpers ----------------------------------------------------
+// ── UI helpers ────────────────────────────────────────────────────
 function setPublishing(on) {
   $('publishBtn').disabled = on;
   $('publishLabel').textContent = on ? 'Publishing…' : 'Publish Post →';
@@ -1309,7 +1045,7 @@ function showStatus(msg, isError, persist = false) {
 function resetForm() {
   $('postTitle').value    = '';
   $('postBody').innerHTML = '';
-  ytVideos = []; if ($('ytVideoList')) renderYtVideoList();
+  $('postYoutube').value  = '';
   $('postLink').value     = '';
   if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
@@ -1327,14 +1063,14 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-// ===============================================================
+// ═══════════════════════════════════════════════════════════════
 // EDIT POSTS FEATURE
-// ===============================================================
+// ═══════════════════════════════════════════════════════════════
 
-let editingSlug  = null;
+let editingSlug = null;
 let editingFileSha = null;
 
-// -- Tab switching ---------------------------------------------
+// ── Tab switching ─────────────────────────────────────────────
 function switchTab(tab) {
   const panelNew  = $('panelNew');
   const panelEdit = $('panelEdit');
@@ -1355,7 +1091,7 @@ function switchTab(tab) {
   }
 }
 
-// -- Load list of posts from /posts/ folder --------------------
+// ── Load list of posts from /posts/ folder ────────────────────
 async function loadPostsList() {
   const list = $('postsList');
   list.innerHTML = '<p class="preview-empty">Loading posts…</p>';
@@ -1372,49 +1108,27 @@ async function loadPostsList() {
       return;
     }
 
-    // Fetch each post to get real title, date, post number
-    list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
-    const postDetails = await Promise.all(htmlFiles.map(async file => {
-      try {
-        const r = await ghFetch(`contents/posts/${file.name}`);
-        if (!r.ok) return { file, title: file.name, date: '', postNum: '' };
-        const j = await r.json();
-        const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const title = doc.querySelector('.post-entry-title')?.textContent?.trim()
-          || file.name.replace('.html','').replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-        const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
-        const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
-        return { file, title, date, postNum };
-      } catch(e) {
-        return { file, title: file.name, date: '', postNum: '' };
-      }
-    }));
+    list.innerHTML = htmlFiles.map(file => {
+      // Convert slug back to readable title
+      const title = file.name
+        .replace('.html', '')
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
 
-    // Sort newest first (by post number descending)
-    postDetails.sort((a, b) => {
-      const na = parseInt(a.postNum.replace('Post #','')) || 0;
-      const nb = parseInt(b.postNum.replace('Post #','')) || 0;
-      return nb - na;
-    });
-
-    list.innerHTML = postDetails.map(({ file, title, date, postNum }) => `
+      return `
         <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
-          <div class="post-list-meta">
-            ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
-            ${date ? `<span class="post-list-date">${date}</span>` : ''}
-          </div>
           <div class="post-list-title">${title}</div>
+          <div class="post-list-slug">${file.name}</div>
           <span class="post-list-arrow">Edit →</span>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
   }
 }
 
-// -- Load a post for editing -----------------------------------
+// ── Load a post for editing ───────────────────────────────────
 async function loadPostForEditing(filename, sha) {
   editingSlug = filename.replace('.html', '');
 
@@ -1434,7 +1148,6 @@ async function loadPostForEditing(filename, sha) {
     const title = doc.querySelector('.post-entry-title')?.textContent?.trim() || '';
     const bodyEl = doc.querySelector('.post-body');
     const bodyHtml = bodyEl ? bodyEl.innerHTML : '';
-    editBodyHtml = bodyHtml;
 
     // Read existing location from fetched post HTML
     const locationEl = doc.querySelector('.post-location');
@@ -1452,37 +1165,10 @@ async function loadPostForEditing(filename, sha) {
       }
     }
 
-    // Parse existing photos from post
-    editPhotos = [];
-    doc.querySelectorAll('.post-photo img, .post-gallery img').forEach(img => {
-      const src = img.getAttribute('src') || '';
-      const caption = img.closest('figure')?.querySelector('figcaption')?.textContent?.trim()
-                   || img.getAttribute('alt') || '';
-      if (src && !src.includes('youtube')) {
-        editPhotos.push({ src, caption, isNew: false });
-      }
-    });
-
-    // Parse existing YouTube videos from post
-    editYtVideos = [];
-    const iframes = doc.querySelectorAll('.post-video iframe');
-    iframes.forEach(iframe => {
-      const src = iframe.getAttribute('src') || '';
-      const idMatch = src.match(/embed\/([a-zA-Z0-9_-]{11})/);
-      if (idMatch) {
-        const vidId = idMatch[1];
-        const caption = iframe.closest('.post-video')?.querySelector('.video-caption')?.textContent?.trim() || '';
-        const label = caption === 'Watch on YouTube →' ? '' : caption;
-        editYtVideos.push({ id: vidId, label });
-      }
-    });
-
     // Populate edit form
     $('editTitle').value = title;
     $('editBody').innerHTML = bodyHtml;
     if ($('editLocation')) $('editLocation').value = existingLocation;
-    renderEditYtVideoList();
-    renderEditPhotoList();
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Show edit form, hide list
@@ -1503,7 +1189,7 @@ async function loadPostForEditing(filename, sha) {
       `;
     };
 
-    $('saveEditBtn').onclick = () => savePostEdit(filename);
+    $('saveEditBtn').onclick = () => savePostEdit(filename, html);
 
     $('statusBar').classList.add('hidden');
 
@@ -1512,155 +1198,71 @@ async function loadPostForEditing(filename, sha) {
   }
 }
 
-// -- Save edited post ------------------------------------------
-async function savePostEdit(filename) {
+// ── Save edited post ──────────────────────────────────────────
+async function savePostEdit(filename, originalHtml) {
   const newTitle    = $('editTitle').value.trim();
   const newBody     = $('editBody').innerHTML.trim();
   const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
-  // Use stored original if editor is empty
-  const rawBody = (newBody && newBody.trim() && newBody.trim() !== '<br>')
-    ? newBody : editBodyHtml;
-
-  // Sanitize - strip inline styles/fonts from pasted content
-  const sanitizeDiv = document.createElement('div');
-  sanitizeDiv.innerHTML = rawBody;
-  sanitizeDiv.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
-  sanitizeDiv.querySelectorAll('[color],[face],[size]').forEach(el => {
-    el.removeAttribute('color'); el.removeAttribute('face'); el.removeAttribute('size');
-  });
-  sanitizeDiv.querySelectorAll('font').forEach(el => el.replaceWith(...el.childNodes));
-  sanitizeDiv.querySelectorAll('span:not([class])').forEach(el => el.replaceWith(...el.childNodes));
-  const bodyToSave = sanitizeDiv.innerHTML;
-
-  if (!bodyToSave || !bodyToSave.trim()) {
-    alert('Body is empty — not saving to protect your content.');
-    return;
-  }
-
   $('saveEditLabel').textContent = 'Saving…';
   $('saveEditBtn').disabled = true;
-  showStatus('Fetching latest version…', false, true);
+  showStatus('Saving changes…', false, true);
 
   try {
-    // Always re-fetch latest from GitHub
-    const latestFetch = await ghFetch(`contents/posts/${filename}`);
-    if (!latestFetch.ok) throw new Error('Could not fetch latest post');
-    const latestJson = await latestFetch.json();
-    const originalHtml = decodeURIComponent(escape(atob(latestJson.content.replace(/\n/g, ''))));
-    editingFileSha = latestJson.sha;
-
-    // Parse into DOM — do ALL changes through the DOM, no string regex on content
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(originalHtml, 'text/html');
-
-    // ── Title ────────────────────────────────────────────────────
-    const titleEl = doc.querySelector('.post-entry-title');
-    if (titleEl) titleEl.textContent = newTitle;
-    const titleTag = doc.querySelector('title');
-    if (titleTag) titleTag.textContent = newTitle + ' - Emmerican Adventure';
-    // og:title
-    const ogTitle = doc.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', newTitle + ' - Emmerican Adventure');
-
-    // ── Location ─────────────────────────────────────────────────
-    const existingLoc = doc.querySelector('.post-location');
+  // Build location HTML
+    let newLocationHtml = '';
     if (newLocation) {
-      let locHtml = '';
       if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
-        locHtml = `<div class="post-location"><a href="${newLocation}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
+        newLocationHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
       } else if (newLocation.includes('|')) {
         const parts = newLocation.split('|').map(s => s.trim());
-        locHtml = `<div class="post-location"><a href="${parts[1]}" target="_blank" rel="noopener">📍 ${parts[0]}</a></div>`;
+        newLocationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
       } else {
-        locHtml = `<div class="post-location">📍 ${newLocation}</div>`;
-      }
-      const locDiv = parser.parseFromString(locHtml, 'text/html').body.firstChild;
-      if (existingLoc) {
-        existingLoc.replaceWith(locDiv);
-      } else {
-        titleEl?.insertAdjacentElement('afterend', locDiv);
-      }
-    } else if (existingLoc) {
-      existingLoc.remove();
-    }
-
-    // ── Body ─────────────────────────────────────────────────────
-    const bodyEl = doc.querySelector('.post-body');
-    if (!bodyEl) throw new Error('Could not find post-body in HTML');
-    bodyEl.innerHTML = '\n        ' + bodyToSave + '\n      ';
-
-    // ── Upload new photos ─────────────────────────────────────────
-    for (let i = 0; i < editPhotos.length; i++) {
-      const p = editPhotos[i];
-      if (p.isNew && p.file) {
-        showStatus(`Uploading photo ${i+1}…`, false, true);
-        const safeName = p.file.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
-        const path = `images/${Date.now()}-${safeName}`;
-        const compressed = await new Promise(resolve => {
-          const image = new Image();
-          image.onload = () => {
-            const maxW = 1600;
-            let w = image.width, h = image.height;
-            if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
-            const canvas = document.createElement('canvas');
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(image, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
-          };
-          image.src = p.dataUrl;
-        });
-        await uploadFile(path, compressed);
-        editPhotos[i].src = `../${path}`;
-        editPhotos[i].isNew = false;
+        newLocationHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
       }
     }
 
-    // ── Rebuild photos in DOM ────────────────────────────────────
-    // Remove existing photo blocks
-    doc.querySelectorAll('.post-photo, .post-gallery').forEach(el => el.remove());
-    // Build new photo HTML and insert before post-body
-    if (editPhotos.length > 0) {
-      let photoHtml = '';
-      if (editPhotos.length === 1) {
-        const p = editPhotos[0];
-        photoHtml = `<figure class="post-photo"><img src="${p.src}" alt="${p.caption || newTitle}" />${p.caption ? `<figcaption>${p.caption}</figcaption>` : ''}</figure>`;
-      } else {
-        const gc = editPhotos.length === 2 ? 'gallery-2' : editPhotos.length === 3 ? 'gallery-3' : 'gallery-4';
-        const items = editPhotos.map(p =>
-          `<figure class="gallery-item"><img src="${p.src}" alt="${p.caption || newTitle}" />${p.caption ? `<figcaption>${p.caption}</figcaption>` : ''}</figure>`
-        ).join('');
-        photoHtml = `<div class="post-gallery ${gc}">${items}</div>`;
-      }
-      const photoNode = parser.parseFromString(photoHtml, 'text/html').body.firstChild;
-      bodyEl.parentNode.insertBefore(photoNode, bodyEl);
+    // Parse original HTML and replace title + body
+    let updated = originalHtml;
+
+    // Replace title in h1
+    updated = updated.replace(
+      /(<h1 class="post-entry-title">)([\s\S]*?)(<\/h1>)/,
+      `$1${escHtml(newTitle)}$3`
+    );
+
+    // Replace title in <title> tag
+    updated = updated.replace(
+      /<title>.*?<\/title>/,
+      `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
+    );
+
+    // Replace or add location
+    if (updated.includes('class="post-location"')) {
+      updated = updated.replace(/<div class="post-location">[\s\S]*?<\/div>/, newLocationHtml);
+    } else if (newLocationHtml) {
+      updated = updated.replace(
+        /(<h1 class="post-entry-title">[\s\S]*?<\/h1>)/,
+        `$1\n        ${newLocationHtml}`
+      );
     }
 
-    // ── Rebuild YouTube videos in DOM ────────────────────────────
-    doc.querySelectorAll('.post-video, .post-videos-grid').forEach(el => el.remove());
-    if (editYtVideos.length > 0) {
-      const makeVidEdit = v => {
-        const cap = v.label
-          ? `<p class="video-caption">${v.label}</p>`
-          : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
-        return `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${v.label || newTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
-      };
-      const vidContainerHtml = editYtVideos.length > 1
-        ? `<div class="post-videos-grid">${editYtVideos.map(makeVidEdit).join('')}</div>`
-        : makeVidEdit(editYtVideos[0]);
-      const vidNode = parser.parseFromString(vidContainerHtml, 'text/html').body.firstChild;
-      bodyEl.parentNode.insertBefore(vidNode, bodyEl);
+    // Replace body content
+    updated = updated.replace(
+      /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
+      `$1\n        ${newBody}\n      $3`
+    );
+
+    // Re-fetch latest SHA before pushing (prevents stale SHA error on repeated edits)
+    const latestRes = await ghFetch(`contents/posts/${filename}`);
+    if (latestRes.ok) {
+      const latestJson = await latestRes.json();
+      editingFileSha = latestJson.sha;
     }
 
-    // ── Preserve footer links ────────────────────────────────────
-    // (already preserved since we're editing the original DOM)
-
-    // ── Serialize and push ───────────────────────────────────────
-    const updated = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-
-    showStatus('Saving to GitHub…', false, true);
+    // Push to GitHub
     const pushRes = await ghFetch(`contents/posts/${filename}`, 'PUT', {
       message: `Edit post: ${newTitle}`,
       content: btoa(unescape(encodeURIComponent(updated))),
@@ -1673,6 +1275,9 @@ async function savePostEdit(filename) {
       throw new Error(err.message || 'Save failed');
     }
 
+    // Update sitemap during edit as well
+    await updateSitemap({ slug: filename.replace('.html', ''), date: new Date().toISOString().split('T')[0] });
+
     showStatus('✓ Post saved! Changes will be live in ~60 seconds.', false);
 
   } catch (err) {
@@ -1683,8 +1288,7 @@ async function savePostEdit(filename) {
   }
 }
 
-
-// -- Edit toolbar (for the edit body editor) -------------------
+// ── Edit toolbar (for the edit body editor) ───────────────────
 function editToolbar(action) {
   $('editBody').focus();
   if (action === 'bold')   document.execCommand('bold');

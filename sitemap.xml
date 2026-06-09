@@ -30,6 +30,13 @@
   </url>
 
   <url>
+    <loc>https://emmericanadventure.com/search.html</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
     <loc>https://emmericanadventure.com/posts/pcs-chronicles-the-medical-milestone.html</loc>
     <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
