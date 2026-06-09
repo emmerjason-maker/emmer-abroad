@@ -47,8 +47,6 @@ function bindEvents() {
 
   // New post YouTube add button
   if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
-  if ($('photoInput')) $('photoInput').addEventListener('change', e => handlePhotoFiles(e.target.files));
-
   // Edit form YouTube add button
   if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
   if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
