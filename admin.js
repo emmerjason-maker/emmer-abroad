@@ -953,8 +953,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     const newItems = uploadedImages.map(img => `
         <div class="photo-item" data-caption="${escHtml(title)}">
           <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
-        </div>`).join('
-');
+        </div>`).join('\n');
 
     const marker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
 
