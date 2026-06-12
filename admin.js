@@ -18,6 +18,7 @@ const CONFIG = {
 // ── State ─────────────────────────────────────────────────────────
 // images = array of { id, file, dataUrl, name, caption }
 let images      = [];
+let ytVideos    = [];
 let githubToken = null;
 
 const $ = id => document.getElementById(id);
@@ -264,7 +265,7 @@ function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim() || linkUrl;
   const fmtDate  = date
@@ -330,6 +331,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
   const tag = `Post #${postNumber}`;
+  const category = ($('postCategory') ? $('postCategory').value : 'PCS') || 'PCS';
 
   // Video block
   let videoBlock = '';
@@ -622,12 +624,12 @@ async function handlePublish() {
   const date     = $('postDate').value;
   const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
   if (!title) { alert('Please add a post title.'); return; }
-  if (!body && !ytId && images.length === 0) {
+  if (!body && (!ytVideos || ytVideos.length === 0) && images.length === 0) {
     alert('Please add some content — body text, a video, or at least one photo.'); return;
   }
 
@@ -1057,7 +1059,7 @@ function showStatus(msg, isError, persist = false) {
 function resetForm() {
   $('postTitle').value    = '';
   $('postBody').innerHTML = '';
-  $('postYoutube').value  = '';
+  if (typeof ytVideos !== 'undefined') { ytVideos = []; if ($('ytVideoList')) $('ytVideoList').innerHTML = ''; }
   $('postLink').value     = '';
   if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
