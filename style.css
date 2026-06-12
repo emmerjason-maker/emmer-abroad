@@ -45,16 +45,18 @@ img { max-width: 100%; display: block; }
   background: var(--paper);
   border-bottom: 1px solid var(--paper-dark);
   backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   height: 70px;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  overflow: hidden;
 }
 
 .logo {
@@ -127,11 +129,11 @@ img { max-width: 100%; display: block; }
   font-size: 1.4rem;
   cursor: pointer;
   color: var(--ink);
-  margin-left: 0.5rem;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s, color 0.2s;
