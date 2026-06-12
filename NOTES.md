@@ -133,9 +133,32 @@
 
 ---
 
+
+## 📱 Social Media
+
+| Platform | Handle / URL |
+|----------|-------------|
+| X (Twitter) | https://x.com/emmericanadvent |
+| Facebook | https://www.facebook.com/profile.php?id=61590685654080 |
+| YouTube (main) | https://www.youtube.com/@EmmericanAdventure |
+| YouTube (secondary) | https://www.youtube.com/@hashtagemmer |
+| Instagram | TBD |
+| Bluesky | TBD |
+| Pinterest | TBD |
+
+### RSS Feed
+- Feed URL: https://emmericanadventure.com/feed.xml
+- Auto-updates when new post is published via admin panel
+- Used by Zapier to auto-post to X, Facebook, Bluesky, etc.
+
+### Zapier Auto-posting
+- Trigger: RSS → New Item in Feed (https://emmericanadventure.com/feed.xml)
+- One Zap per platform (free tier = 100 tasks/month, plenty for weekly posting)
+
+---
 ## 🐛 Known Issues / Open Items
 
-- [ ] Charley's overseas vet screening still in progress (update about page when complete)
+- [ ] Charley's overseas vet screening still in progress
 - [ ] AdSense awaiting approval — post-ad blocks collapse until approved
 - [ ] Follow-seller push notifications untested end-to-end (Next Post PCS)
 - [ ] Stripe customer portal untested (Next Post PCS)
