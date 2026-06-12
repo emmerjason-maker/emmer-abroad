@@ -987,14 +987,21 @@ img { max-width: 100%; display: block; }
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: var(--white);
-  width: 48px; height: 48px;
-  font-size: 1.8rem;
+  background: rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.8);
+  color: #ffffff;
+  width: 52px; height: 52px;
+  font-size: 2rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s;
   display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.lightbox-prev:hover, .lightbox-next:hover {
+  background: rgba(0,0,0,0.85);
+  border-color: #ffffff;
 }
 .lightbox-prev { left: 1.5rem; }
 .lightbox-next { right: 1.5rem; }
