@@ -657,9 +657,10 @@ img { max-width: 100%; display: block; }
 .footer-inner {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -692,7 +693,9 @@ img { max-width: 100%; display: block; }
 
 .footer-links {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  justify-content: center;
 }
 
 .footer-links a {
@@ -1265,4 +1268,25 @@ img { max-width: 100%; display: block; }
 
 @media (max-width: 600px) {
   .journey-map-section { padding: 3rem 1.25rem; }
+}
+
+@media (max-width: 600px) {
+  .footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+  }
+  .footer-links {
+    justify-content: center;
+    gap: 0.6rem 1rem;
+  }
+  .footer-links a {
+    font-size: 0.65rem;
+  }
+  .footer-copy {
+    text-align: center;
+    font-size: 0.62rem;
+  }
 }
