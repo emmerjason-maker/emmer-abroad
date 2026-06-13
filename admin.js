@@ -12,7 +12,7 @@ const CONFIG = {
   branch:    'main',
   blogFile:  'blog.html',
   maxImages: 10,
-  maxSizeMB: 5,
+  maxSizeMB: 25,
 };
 
 // ── State ─────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ function addFiles(fileList) {
 
   toAdd.forEach(file => {
     if (file.size > CONFIG.maxSizeMB * 1024 * 1024) {
-      alert(`"${file.name}" is over ${CONFIG.maxSizeMB}MB and was skipped.`);
+      alert(`"${file.name}" is over ${CONFIG.maxSizeMB}MB (original size) and was skipped.`);
       return;
     }
     const id = `img_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
