@@ -470,7 +470,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 
   // Build prev post link if provided
   const prevPostHtml = (prevPostSlug && prevPostTitle)
-    ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
+    ? '<a href="../posts/' + escHtml(prevPostSlug) + '.html" class="read-more small" style="margin-left:auto;">Next: ' + escHtml(prevPostTitle) + ' →</a>'
     : '';
 
   // Build location HTML — supports plain text, URL, or "Label | URL" format
