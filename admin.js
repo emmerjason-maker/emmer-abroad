@@ -2148,8 +2148,15 @@ async function imgSave() {
   $('imgSaveBtn').disabled = true;
 
   try {
+    // Get the URL of this image to update ALL rows with same URL
+    const imgEntry = imgAllEntries.find(i => i.id === id);
+    const imgUrl   = imgEntry?.url;
+    // Use URL-based filter to sync tags/alt across duplicate rows
+    const filterParam = imgUrl
+      ? `url=eq.${encodeURIComponent(imgUrl)}`
+      : `id=eq.${id}`;
     const res = await fetch(
-      `${IMG_SUPABASE_URL}/rest/v1/post_images?id=eq.${id}`,
+      `${IMG_SUPABASE_URL}/rest/v1/post_images?${filterParam}`,
       {
         method: 'PATCH',
         headers: {
