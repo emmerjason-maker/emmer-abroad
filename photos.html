@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <script src="darkmode.js"></script>
   <link rel="stylesheet" href="darkmode.css" />
+  <script src="darkmode.js"></script>
   <meta name="description" content="All photos from the Emmerican Adventure — our journey from Jacksonville, FL to Yokosuka, Japan." />
   <meta name="keywords" content="military family Japan photos, PCS move photos, Yokosuka Japan, Navy family move, Emmerican Adventure" />
   <meta name="author" content="Emmerican Adventure" />
@@ -22,7 +22,289 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3956728145959428" crossorigin="anonymous"></script>
+
+  <style>
+    /* ── Photos page styles ───────────────────────────────────── */
+    .photos-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .photos-hero {
+      padding: 3.5rem 0 2rem;
+      border-bottom: 1px solid var(--paper-dark);
+      margin-bottom: 2rem;
+    }
+
+    .photos-hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+    }
+
+    .photos-hero-desc {
+      font-size: 1rem;
+      color: var(--ink-faint);
+      max-width: 600px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    /* Stats */
+    .photos-stat {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .photos-stat-num {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    /* Controls */
+    .photos-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .photos-pills {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .photos-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.4rem 0.9rem;
+      background: transparent;
+      border: 1px solid var(--paper-dark);
+      color: var(--ink-faint);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .photos-pill:hover { border-color: var(--ink-faint); color: var(--ink); }
+    .photos-pill.active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+    .photos-search {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.9rem;
+      background: var(--paper-warm);
+      border: 1px solid var(--paper-dark);
+      color: var(--ink);
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .photos-search:focus { border-color: var(--gold); }
+    .photos-search::placeholder { color: var(--ink-faint); }
+
+    /* Grid */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .photo-item {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--paper-dark);
+      cursor: pointer;
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: block;
+    }
+
+    .photo-item:hover img { transform: scale(1.05); }
+
+    .photo-item-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.6rem 0.75rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .photo-item:hover .photo-item-overlay { opacity: 1; }
+
+    .photo-item-tags {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .photo-item-tag {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.1rem 0.35rem;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    .photo-item-alt {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .photo-featured-dot {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    /* Loading / empty */
+    .photos-loading {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .photos-loading-kanji {
+      font-family: var(--font-body);
+      font-size: 4rem;
+      color: var(--paper-dark);
+      margin-bottom: 1rem;
+      animation: floatKanji 3s ease-in-out infinite;
+    }
+
+    .photos-empty {
+      text-align: center;
+      padding: 5rem 2rem;
+      border: 1px dashed var(--paper-dark);
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.93);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox-img-wrap {
+      max-width: 92vw;
+      max-height: 84vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-img-wrap img {
+      max-width: 100%;
+      max-height: 84vh;
+      object-fit: contain;
+    }
+
+    .lightbox-close, .lightbox-prev, .lightbox-next {
+      position: absolute;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.4rem;
+      padding: 0.5rem 0.75rem;
+      transition: background 0.2s;
+      line-height: 1;
+    }
+
+    .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .lightbox-close { top: 1rem; right: 1rem; }
+    .lightbox-prev  { left: 1rem; top: 50%; transform: translateY(-50%); font-size: 2rem; }
+    .lightbox-next  { right: 1rem; top: 50%; transform: translateY(-50%); font-size: 2rem; }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      letter-spacing: 0.05em;
+      max-width: 80vw;
+    }
+
+    .lightbox-post-link {
+      display: inline-block;
+      margin-top: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .lightbox-post-link:hover { opacity: 0.8; }
+
+    @media (max-width: 640px) {
+      .photos-controls { flex-direction: column; align-items: stretch; }
+      .photos-search { width: 100%; }
+      .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+    }
+  </style>
 </head>
 <body>
 
@@ -50,83 +332,46 @@
     </div>
   </header>
 
-  <main>
+  <main class="photos-main">
 
-    <section class="photos-section" id="photos" style="padding-top: 4rem;">
-      <div class="section-header">
-        <h2 class="section-title">All Photos</h2>
-        <div class="section-rule"></div>
+    <div class="photos-hero">
+      <div class="hero-label">The Emmerican Family</div>
+      <h1 class="photos-hero-title">Photos</h1>
+      <p class="photos-hero-desc">Every moment from our move — packing up Jacksonville, road trips along the way, and soon, life in Yokosuka.</p>
+      <div class="photos-stat">
+        <span class="photos-stat-num" id="photoCount">–</span>
+        photos and counting
       </div>
+    </div>
 
-      <!-- ====== PHOTO GRID — auto-managed by admin panel ====== -->
-      <div class="photo-grid">
-
-        <div class="photo-item" data-caption="Summer Fun at the NAS Jax Pool!">
-          <img src="images/1781362198001-img_2132.jpeg" alt="Summer Fun at the NAS Jax Pool!" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="From Jacksonville to Japan: Mastering Golden Curry at Home">
-          <img src="images/1781278336403-img_2116.jpeg" alt="From Jacksonville to Japan: Mastering Golden Curry at Home" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="From Jacksonville to Japan: Mastering Golden Curry at Home">
-          <img src="images/1781278339078-img_2117.jpeg" alt="From Jacksonville to Japan: Mastering Golden Curry at Home" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell">
-          <img src="images/1780972154774-img-2113.jpeg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell">
-          <img src="images/1780972156344-img-0038.jpg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell">
-          <img src="images/1780972157085-img-3294.jpg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="PCS Chronicles: The Medical Milestone">
-          <img src="images/1780615200623-img_2058.jpeg" alt="PCS Chronicles: The Medical Milestone" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues">
-          <img src="images/1780803463143-0ffc98f8-eac5-466b-a68e-bb65a5e653b4-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues">
-          <img src="images/1780803464418-6b5c29d5-b997-49f7-991d-7f83dcd642ff-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues">
-          <img src="images/1780803465402-a2df99ef-1351-4243-8f67-1b620ecd1913-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues">
-          <img src="images/1780803466272-f4b48abb-9872-4a2d-b2a6-8311d42b9651-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues">
-          <img src="images/1780803467098-ca13573c-5311-477a-938e-d559e2226085-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Chasing Dreams Under the Wings of Legends: A Day at NAS Jax">
-          <img src="images/1780529452654-img_2047.jpeg" alt="Chasing Dreams Under the Wings of Legends: A Day at NAS Jax" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Chasing Dreams Under the Wings of Legends: A Day at NAS Jax">
-          <img src="images/1780529454954-img_2053.jpeg" alt="Chasing Dreams Under the Wings of Legends: A Day at NAS Jax" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Training My Palate: A Pre-Departure Hot Pot Feast">
-          <img src="images/1780446352815-img_2042.jpeg" alt="Training My Palate: A Pre-Departure Hot Pot Feast" loading="lazy" />
-        </div>
-        <div class="photo-item" data-caption="Packing Up for Japan: The Purge Begins!">
-          <img src="images/1780279755736-img_2030.jpeg" alt="Packing Up for Japan: The Purge Begins!" loading="lazy" />
-        </div>
-
-        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->
-
+    <!-- Controls -->
+    <div class="photos-controls">
+      <div class="photos-pills" id="tagPills">
+        <button class="photos-pill active" data-tag="all">All</button>
       </div>
+      <input type="search" class="photos-search" id="photoSearch" placeholder="Search photos…" />
+    </div>
 
-      <!-- Lightbox -->
-      <div class="lightbox" id="lightbox">
-        <button class="lightbox-close" id="lightboxClose">✕</button>
-        <button class="lightbox-prev" id="lightboxPrev">‹</button>
-        <button class="lightbox-next" id="lightboxNext">›</button>
-        <div class="lightbox-img-wrap">
-          <img id="lightboxImg" src="" alt="" />
-        </div>
-        <div class="lightbox-caption" id="lightboxCaption"></div>
-      </div>
-    </section>
+    <!-- Grid -->
+    <div id="photosLoading" class="photos-loading">
+      <div class="photos-loading-kanji">写</div>
+      <p>Loading photos…</p>
+    </div>
+    <div id="photosEmpty" class="photos-empty hidden">No photos match.</div>
+    <div class="photo-grid" id="photoGrid"></div>
 
   </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+    <button class="lightbox-prev" id="lightboxPrev" aria-label="Previous">‹</button>
+    <button class="lightbox-next" id="lightboxNext" aria-label="Next">›</button>
+    <div class="lightbox-img-wrap">
+      <img id="lightboxImg" src="" alt="" />
+    </div>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
 
   <footer class="site-footer">
     <div class="footer-inner">
@@ -146,8 +391,179 @@
     </div>
   </footer>
 
-  <script src="main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+  /* ── Photos page — Supabase powered ─────────────────────── */
+  const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
 
+  let allPhotos      = [];
+  let filteredPhotos = [];
+  let activeTag      = 'all';
+  let lbIndex        = 0;
+  let searchDebounce;
+
+  const $ = id => document.getElementById(id);
+
+  // ── Fetch ────────────────────────────────────────────────────
+  async function loadPhotos() {
+    try {
+      // Deduplicate by URL — get distinct photos ordered by date
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc`,
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+      );
+      if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+      const data = await res.json();
+
+      // Deduplicate by URL — keep first occurrence (newest date wins)
+      const seen = new Set();
+      allPhotos = data.filter(p => {
+        if (seen.has(p.url)) return false;
+        seen.add(p.url);
+        return true;
+      });
+
+      buildTagPills();
+      renderPhotos();
+    } catch (err) {
+      $('photosLoading').innerHTML = '<p style="color:var(--red)">Failed to load photos. Please refresh.</p>';
+    }
+  }
+
+  // ── Tag pills ────────────────────────────────────────────────
+  function buildTagPills() {
+    const tagSet = new Set();
+    allPhotos.forEach(p => (p.tags || []).forEach(t => tagSet.add(t)));
+    const tags = Array.from(tagSet).sort();
+
+    const pills = $('tagPills');
+    tags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'photos-pill';
+      btn.dataset.tag = tag;
+      btn.textContent = tag;
+      btn.addEventListener('click', () => setTag(tag, btn));
+      pills.appendChild(btn);
+    });
+  }
+
+  function setTag(tag, btn) {
+    document.querySelectorAll('.photos-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeTag = tag;
+    renderPhotos();
+  }
+
+  // ── Render ───────────────────────────────────────────────────
+  function renderPhotos() {
+    const query = ($('photoSearch')?.value || '').toLowerCase().trim();
+
+    filteredPhotos = allPhotos.filter(p => {
+      if (activeTag !== 'all' && !(p.tags || []).includes(activeTag)) return false;
+      if (query) {
+        const hay = [p.alt_text, p.post_url, ...(p.tags || [])].filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      return true;
+    });
+
+    $('photosLoading').classList.add('hidden');
+    $('photoCount').textContent = filteredPhotos.length;
+
+    if (filteredPhotos.length === 0) {
+      $('photosEmpty').classList.remove('hidden');
+      $('photoGrid').innerHTML = '';
+      return;
+    }
+
+    $('photosEmpty').classList.add('hidden');
+
+    $('photoGrid').innerHTML = filteredPhotos.map((p, i) => {
+      const tags = (p.tags || []).map(t => `<span class="photo-item-tag">${esc(t)}</span>`).join('');
+      const featured = p.featured ? '<div class="photo-featured-dot" title="Cover photo"></div>' : '';
+      return `
+        <div class="photo-item" data-index="${i}" role="button" tabindex="0" aria-label="${esc(p.alt_text || 'Photo')}">
+          <img src="${esc(p.url)}" alt="${esc(p.alt_text || '')}" loading="lazy" />
+          ${featured}
+          <div class="photo-item-overlay">
+            ${tags ? `<div class="photo-item-tags">${tags}</div>` : ''}
+            ${p.alt_text ? `<div class="photo-item-alt">${esc(p.alt_text)}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    // Bind clicks
+    document.querySelectorAll('.photo-item').forEach(el => {
+      el.addEventListener('click', () => openLightbox(parseInt(el.dataset.index)));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') openLightbox(parseInt(el.dataset.index)); });
+    });
+  }
+
+  // ── Lightbox ─────────────────────────────────────────────────
+  function openLightbox(index) {
+    lbIndex = index;
+    updateLightbox();
+    $('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    $('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function shiftLightbox(dir) {
+    lbIndex = (lbIndex + dir + filteredPhotos.length) % filteredPhotos.length;
+    updateLightbox();
+  }
+
+  function updateLightbox() {
+    const p = filteredPhotos[lbIndex];
+    if (!p) return;
+    $('lightboxImg').src = p.url;
+    $('lightboxImg').alt = p.alt_text || '';
+    const postLink = p.post_url
+      ? `<a href="${esc(p.post_url)}" class="lightbox-post-link">Read the post →</a>`
+      : '';
+    $('lightboxCaption').innerHTML = `${esc(p.alt_text || '')}${postLink ? '<br>' + postLink : ''}`;
+    $('lightboxPrev').style.display = filteredPhotos.length > 1 ? '' : 'none';
+    $('lightboxNext').style.display = filteredPhotos.length > 1 ? '' : 'none';
+  }
+
+  // ── Events ───────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPhotos();
+
+    $('lightboxClose').addEventListener('click', closeLightbox);
+    $('lightboxPrev').addEventListener('click', () => shiftLightbox(-1));
+    $('lightboxNext').addEventListener('click', () => shiftLightbox(1));
+    $('lightbox').addEventListener('click', e => { if (e.target === $('lightbox')) closeLightbox(); });
+
+    document.addEventListener('keydown', e => {
+      if (!$('lightbox').classList.contains('open')) return;
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  shiftLightbox(-1);
+      if (e.key === 'ArrowRight') shiftLightbox(1);
+    });
+
+    $('photoSearch').addEventListener('input', () => {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(renderPhotos, 200);
+    });
+
+    document.querySelector('.photos-pill')?.addEventListener('click', function() {
+      setTag('all', this);
+    });
+  });
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  </script>
+
+  <script src="main.js"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -157,4 +573,3 @@
   </script>
 </body>
 </html>
-
