@@ -997,12 +997,13 @@ select.field-input { cursor: pointer; }
 }
 
 .img-admin-alt {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 0.15rem;
+  max-width: 100%;
 }
 
 .img-admin-post {
@@ -1018,7 +1019,9 @@ select.field-input { cursor: pointer; }
 .img-admin-tags {
   display: flex;
   gap: 0.25rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .img-featured-badge {
