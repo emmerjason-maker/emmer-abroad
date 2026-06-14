@@ -1817,6 +1817,7 @@ async function advSave() {
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
     photos:           photos.length ? photos : null,
+    place_name:       $('advPlaceName')?.value.trim()  || null,
     lat:              parseFloat($('advLat')?.value)  || null,
     lng:              parseFloat($('advLng')?.value)  || null,
     post_url:         $('advPostUrl')?.value.trim()   || null,
@@ -1899,6 +1900,11 @@ function advEdit(id) {
   $('advPhotos').value     = (a.photos || []).join('\n');
   $('advLat').value        = a.lat || '';
   $('advLng').value        = a.lng || '';
+  $('advPlaceName').value  = a.place_name || '';
+  $('advPlaceSearch').value = a.place_name || '';
+  if (a.lat && a.lng) {
+    showAdminMapPreview(parseFloat(a.lat), parseFloat(a.lng), a.place_name || a.name);
+  }
   $('advPostUrl').value    = a.post_url || '';
 
   // Family reactions
@@ -1970,6 +1976,9 @@ function advResetForm() {
   $('advPhotos').value           = '';
   $('advLat').value              = '';
   $('advLng').value              = '';
+  $('advPlaceName').value        = '';
+  $('advPlaceSearch').value      = '';
+  document.getElementById('advMapPreview')?.classList.add('hidden');
   $('advPostUrl').value          = '';
   ['jason','megan','john','kate'].forEach(n => {
     const cap = n.charAt(0).toUpperCase() + n.slice(1);
@@ -2164,4 +2173,88 @@ function imgCancelEdit() {
   const wrap = $('imgPreviewWrap');
   if (wrap) wrap.innerHTML = '<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;font-family:var(--font-mono);">Select an image →</span>';
   document.querySelectorAll('.img-admin-entry').forEach(el => el.classList.remove('active'));
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Google Maps — Admin Places Autocomplete + Mini Map Preview
+   ═══════════════════════════════════════════════════════════════ */
+
+let adminAutocomplete = null;
+let adminMapPreview   = null;
+let adminMapMarker    = null;
+
+function initAdminMaps() {
+  const input = document.getElementById('advPlaceSearch');
+  if (!input) return;
+
+  adminAutocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['geometry', 'name', 'formatted_address'],
+  });
+
+  adminAutocomplete.addListener('place_changed', () => {
+    const place = adminAutocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) return;
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+    const name = place.name || '';
+
+    // Fill hidden fields
+    document.getElementById('advLat').value = lat;
+    document.getElementById('advLng').value = lng;
+
+    // Fill place name if empty
+    const placeNameField = document.getElementById('advPlaceName');
+    if (placeNameField && !placeNameField.value) {
+      placeNameField.value = name;
+    }
+
+    showAdminMapPreview(lat, lng, name);
+  });
+}
+
+function showAdminMapPreview(lat, lng, label) {
+  const wrap = document.getElementById('advMapPreview');
+  const inner = document.getElementById('advMapPreviewInner');
+  const coords = document.getElementById('advMapCoords');
+  if (!wrap || !inner) return;
+
+  wrap.classList.remove('hidden');
+
+  if (!adminMapPreview) {
+    adminMapPreview = new google.maps.Map(inner, {
+      zoom: 15,
+      center: { lat, lng },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: adminMapStyles(),
+    });
+    adminMapMarker = new google.maps.Marker({
+      position: { lat, lng },
+      map: adminMapPreview,
+      title: label,
+    });
+  } else {
+    adminMapPreview.setCenter({ lat, lng });
+    adminMapMarker.setPosition({ lat, lng });
+    adminMapMarker.setTitle(label);
+  }
+
+  if (coords) {
+    coords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  }
+}
+
+function adminMapStyles() {
+  return [
+    { elementType: 'geometry', stylers: [{ color: '#1a1714' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#f5f0e8' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1714' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c2826' }] },
+    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a1714' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  ];
 }
