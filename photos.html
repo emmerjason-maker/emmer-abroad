@@ -447,7 +447,6 @@
   // ── Fetch ────────────────────────────────────────────────────
   async function loadPhotos() {
     try {
-      // Deduplicate by URL — get distinct photos ordered by date
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc`,
         { headers: {
@@ -459,59 +458,29 @@
         }
       );
       if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
-      const data = await res.json();
+      const raw = await res.json();
 
-      // Deduplicate by URL — keep first occurrence (newest date wins)
+      // Deduplicate by URL
       const seen = new Set();
-      allPhotos = data.filter(p => {
+      allPhotos = raw.filter(p => {
         if (seen.has(p.url)) return false;
         seen.add(p.url);
         return true;
       });
-
-      // Hide loading spinner before rendering
-      const loadEl = document.getElementById('photosLoading');
-      if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
-
-      buildTagPills();
-      renderPhotos();
     } catch (err) {
       $('photosLoading').innerHTML = '<p style="color:var(--red)">Failed to load photos. Please refresh.</p>';
+      return;
     }
+
+    // Hide loading — only after data is ready
+    const loadEl = document.getElementById('photosLoading');
+    if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
+
+    // Render — called once after fetch completes
+    renderPhotos();
   }
 
   // ── Tag pills ────────────────────────────────────────────────
-  function buildTagPills() {
-    const tagSet = new Set();
-    allPhotos.forEach(p => (p.tags || []).forEach(t => tagSet.add(t)));
-    const tags = Array.from(tagSet).sort();
-
-    // Short tags (<=15 chars) go in pills, long tags go in dropdown
-    const SHORT_MAX = 15;
-    const pills    = $('tagPills');
-    const dropdown = $('tagDropdown');
-
-    tags.forEach(tag => {
-      if (tag.length <= SHORT_MAX) {
-        const btn = document.createElement('button');
-        btn.className = 'photos-pill';
-        btn.dataset.tag = tag;
-        btn.textContent = tag;
-        btn.addEventListener('click', () => setTag(tag, btn));
-        pills.appendChild(btn);
-      } else {
-        if (dropdown) {
-          const opt = document.createElement('option');
-          opt.value = tag;
-          opt.textContent = tag;
-          dropdown.appendChild(opt);
-        }
-      }
-    });
-
-    // Hide dropdown if no long tags
-    if (dropdown && dropdown.options.length <= 1) dropdown.style.display = 'none';
-  }
 
   function setTagFromDropdown(sel) {
     const tag = sel.value;
@@ -528,20 +497,14 @@
 
   // ── Render ───────────────────────────────────────────────────
   function renderPhotos() {
+    if (!allPhotos.length) return;
+
     const query = ($('photoSearch')?.value || '').toLowerCase().trim();
 
-    if (activeTag === undefined) activeTag = 'all';
-  if (!allPhotos.length) { 
-    $('photosEmpty').classList.add('hidden');
-    return;
-  }
-  filteredPhotos = allPhotos.filter(p => {
-      if (activeTag !== 'all' && !(p.tags || []).includes(activeTag)) return false;
-      if (query) {
-        const hay = [p.alt_text, p.post_url, ...(p.tags || [])].filter(Boolean).join(' ').toLowerCase();
-        if (!hay.includes(query)) return false;
-      }
-      return true;
+    filteredPhotos = allPhotos.filter(p => {
+      if (!query) return true;
+      const hay = [p.alt_text, p.post_url, ...(p.tags || [])].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(query);
     });
 
     $('photosLoading').classList.add('hidden');
