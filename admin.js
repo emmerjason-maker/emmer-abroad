@@ -2079,6 +2079,11 @@ function imgRenderList() {
     const tagCount = (img.tags || []).length > 3 ? `<span class="adv-tag">+${img.tags.length - 3}</span>` : '';
     const featured = img.featured ? '<span class="img-featured-badge">★ cover</span>' : '';
     const altDisplay = img.alt_text || '<span style="color:rgba(255,255,255,0.25);font-style:italic;">no alt text</span>';
+    // Show short filename as subtitle, alt text as title
+    const filename = img.url ? img.url.split('/').pop().replace(/^\d+-/, '').substring(0, 30) : '—';
+    const dateStr = img.taken_date
+      ? new Date(img.taken_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : '';
     return `
       <div class="img-admin-entry ${img.id === $('imgEditId')?.value ? 'active' : ''}" onclick="imgEdit('${img.id}')">
         <div class="img-admin-thumb">
@@ -2086,7 +2091,7 @@ function imgRenderList() {
         </div>
         <div class="img-admin-info">
           <div class="img-admin-alt">${altDisplay} ${featured}</div>
-          <div class="img-admin-post">${escHtmlAdmin(img.post_url || '—')}</div>
+          <div class="img-admin-post">${dateStr ? dateStr + ' · ' : ''}${escHtmlAdmin(img.post_url ? img.post_url.split('/').pop().replace('.html','') : '—')}</div>
           <div class="img-admin-tags">${tags}${tagCount}</div>
         </div>
       </div>`;
