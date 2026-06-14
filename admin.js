@@ -2184,7 +2184,7 @@ let adminAutocomplete = null;
 let adminMapPreview   = null;
 let adminMapMarker    = null;
 
-function initAdminMaps() {
+window.initAdminMapsReady = async function() {
   const inputWrap = document.getElementById('advPlaceSearch')?.parentElement;
   if (!inputWrap) return;
 
@@ -2198,20 +2198,12 @@ function initAdminMaps() {
   const oldInput = document.getElementById('advPlaceSearch');
   if (oldInput) oldInput.replaceWith(placeAuto);
 
-  placeAuto.addEventListener('gmp-placeselect', async (e) => {
-    const place = e.placeName ? e : e.place;
-    // Fetch full details
-    const { Place } = await google.maps.importLibrary('places');
-    const p = new Place({ id: e.placeName || (place && place.id) || '' });
+  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
+    await place.fetchFields({ fields: ['displayName', 'location'] });
 
-    // Fallback: use viewport/location from event directly if available
-    let lat, lng, name;
-    if (e.place) {
-      await e.place.fetchFields({ fields: ['displayName', 'location'] });
-      lat  = e.place.location?.lat();
-      lng  = e.place.location?.lng();
-      name = e.place.displayName || '';
-    }
+    const lat  = place.location?.lat();
+    const lng  = place.location?.lng();
+    const name = place.displayName || '';
 
     if (!lat || !lng) return;
 
