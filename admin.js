@@ -1913,11 +1913,19 @@ function advEdit(id) {
   renderAdvYtList();
   if ($('advLat'))       $('advLat').value              = a.lat || '';
   if ($('advLng'))       $('advLng').value              = a.lng || '';
-  // place_name stored in advName; no separate advPlaceName field
-  // Set value on PlaceAutocompleteElement (may have replaced advPlaceSearch)
+  // Pre-fill location search with place name or city+country
   const advAutoEl = document.getElementById('advPlaceAutocomplete');
-  if (advAutoEl) advAutoEl.value = a.place_name || '';
-  else if ($('advPlaceSearch')) $('advPlaceSearch').value = a.place_name || '';
+  const locationLabel = a.place_name || a.name || [a.location_city, a.location_country].filter(Boolean).join(', ');
+  if (advAutoEl) advAutoEl.value = locationLabel;
+  else if ($('advPlaceSearch')) $('advPlaceSearch').value = locationLabel;
+
+  // Show city/country disclosure and fill it
+  if (a.location_city || a.location_country) {
+    const disc = document.querySelector('.adv-location-override');
+    if (disc) disc.open = true;
+  }
+
+  // Show map preview if coordinates exist
   if (a.lat && a.lng) {
     showAdminMapPreview(parseFloat(a.lat), parseFloat(a.lng), a.place_name || a.name);
   }
