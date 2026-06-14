@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adventures — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="blog.css" />
+  <link rel="stylesheet" href="darkmode.css" />
+  <link rel="stylesheet" href="adventures.css" />
+
+  <meta name="description" content="Every restaurant, place, and country the Emmerican family has explored — from Jacksonville to Japan and beyond." />
+  <meta name="author" content="Emmerican Adventure" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://emmericanadventure.com/adventures.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Emmerican Adventure" />
+  <meta property="og:title" content="Adventures — Emmerican Adventure" />
+  <meta property="og:description" content="Every restaurant, place, and country the Emmerican family has explored." />
+  <meta property="og:url" content="https://emmericanadventure.com/adventures.html" />
+  <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script src="darkmode.js"></script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KRCW4S3G9P');
+  </script>
+</head>
+<body>
+
+  <div class="bg-kanji" aria-hidden="true">旅</div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <a href="index.html" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;">
+          <span class="logo-kanji">日本</span>
+          <div class="logo-text">
+            <span class="logo-title">Emmerican Adventure</span>
+            <span class="logo-sub">Chapter 1: We're Moving</span>
+          </div>
+        </a>
+      </div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="blog.html" class="nav-link">Journal</a>
+        <a href="adventures.html" class="nav-link active">Adventures</a>
+        <a href="index.html#videos" class="nav-link">Videos</a>
+        <a href="index.html#photos" class="nav-link">Photos</a>
+        <a href="about.html" class="nav-link">About</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <main class="adv-main">
+
+    <!-- ── HERO ───────────────────────────────────────────────────── -->
+    <div class="adv-hero">
+      <div class="hero-label">The Emmerican Family</div>
+      <h1 class="adv-hero-title">Adventures</h1>
+      <p class="adv-hero-desc">Every restaurant we've tried, every place we've explored, every country we've set foot in — documented for posterity (and for when we can't remember if that ramen spot was actually good).</p>
+
+      <!-- Stats bar -->
+      <div class="adv-stats" id="advStats">
+        <div class="adv-stat">
+          <span class="adv-stat-num" id="statRestaurants">–</span>
+          <span class="adv-stat-label">Restaurants</span>
+        </div>
+        <div class="adv-stat-divider"></div>
+        <div class="adv-stat">
+          <span class="adv-stat-num" id="statPlaces">–</span>
+          <span class="adv-stat-label">Places</span>
+        </div>
+        <div class="adv-stat-divider"></div>
+        <div class="adv-stat">
+          <span class="adv-stat-num" id="statCountries">–</span>
+          <span class="adv-stat-label">Countries</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FILTERS ────────────────────────────────────────────────── -->
+    <div class="adv-controls">
+      <div class="adv-filter-pills" id="filterPills">
+        <button class="adv-pill active" data-type="all">All</button>
+        <button class="adv-pill" data-type="restaurant">🍜 Restaurants</button>
+        <button class="adv-pill" data-type="place">📍 Places</button>
+        <button class="adv-pill" data-type="country">🌏 Countries</button>
+      </div>
+
+      <div class="adv-search-wrap">
+        <input type="search" class="adv-search" id="advSearch" placeholder="Search adventures…" />
+      </div>
+    </div>
+
+    <!-- ── LOCATION GROUPS ────────────────────────────────────────── -->
+    <div class="adv-content" id="advContent">
+      <div class="adv-loading" id="advLoading">
+        <div class="adv-loading-kanji">旅</div>
+        <p>Loading adventures…</p>
+      </div>
+      <div class="adv-empty hidden" id="advEmpty">
+        <p class="adv-empty-title">No adventures yet</p>
+        <p class="adv-empty-sub">Check back soon — we're just getting started.</p>
+      </div>
+      <div id="advGrid" class="adv-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER (matches site footer) ─────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <span class="logo-kanji" style="font-size:1.2rem;">日本</span>
+        <span style="font-family:var(--font-display);font-size:1rem;">Emmerican Adventure</span>
+      </div>
+      <p class="footer-copy">A Navy family moving from Jacksonville, FL to Yokosuka, Japan · Summer 2026</p>
+      <div class="footer-social">
+        <a href="https://www.instagram.com/emmericanadventure/" target="_blank" rel="noopener" aria-label="Instagram">IG</a>
+        <a href="https://x.com/emmericanadvent" target="_blank" rel="noopener" aria-label="X">𝕏</a>
+        <a href="https://www.facebook.com/emmericanadventure" target="_blank" rel="noopener" aria-label="Facebook">FB</a>
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank" rel="noopener" aria-label="YouTube">YT</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── LIGHTBOX ───────────────────────────────────────────────── -->
+  <div class="adv-lightbox hidden" id="advLightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="adv-lightbox-close" id="advLightboxClose" aria-label="Close">✕</button>
+    <button class="adv-lightbox-prev" id="advLightboxPrev" aria-label="Previous">‹</button>
+    <button class="adv-lightbox-next" id="advLightboxNext" aria-label="Next">›</button>
+    <img class="adv-lightbox-img" id="advLightboxImg" src="" alt="" />
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="adventures.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
