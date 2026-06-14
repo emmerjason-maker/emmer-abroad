@@ -36,6 +36,8 @@ async function loadAdventures() {
 
     if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
     allAdventures = await res.json();
+    const loadEl = $('advLoading');
+    if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
     renderAll();
   } catch (err) {
     console.error('Failed to load adventures:', err);
@@ -83,16 +85,19 @@ function renderAll() {
   // Update stats (always from full set, not filtered)
   updateStats(allAdventures);
 
-  // Hide loading
-  $('advLoading').classList.add('hidden');
+  // Don't show empty state if data hasn't loaded yet
+  if (!allAdventures.length && filtered.length === 0) {
+    return;
+  }
 
+  const emptyEl = $('advEmpty');
   if (filtered.length === 0) {
-    $('advEmpty').classList.remove('hidden');
+    if (emptyEl) { emptyEl.style.display = ''; emptyEl.classList.remove('hidden'); }
     $('advGrid').innerHTML = '';
     return;
   }
 
-  $('advEmpty').classList.add('hidden');
+  if (emptyEl) { emptyEl.style.display = 'none'; emptyEl.classList.add('hidden'); }
 
   // Group by country → city
   const groups = groupAdventures(filtered);
@@ -113,7 +118,7 @@ function groupAdventures(data) {
   const map = new Map();
 
   data.forEach(a => {
-    const country = a.location_country || 'Unknown';
+    const country = a.location_country || 'Location Unknown';
     const city    = a.location_city    || '';
     const key     = city ? `${country}||${city}` : country;
 
