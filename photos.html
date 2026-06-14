@@ -171,13 +171,14 @@
 
     .photo-item-tag {
       font-family: var(--font-mono);
-      font-size: 0.55rem;
+      font-size: 0.6rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 0.1rem 0.35rem;
-      background: rgba(255,255,255,0.15);
-      color: #fff;
-      backdrop-filter: blur(4px);
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.5rem;
+      background: rgba(0,0,0,0.65);
+      color: rgba(255,255,255,0.95);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.15);
     }
 
     .photo-item-alt {
@@ -248,9 +249,11 @@
     }
 
     .lightbox-img-wrap img {
-      max-width: 100%;
-      max-height: 84vh;
+      max-width: 92vw;
+      max-height: 90vh;
       object-fit: contain;
+      width: auto;
+      height: auto;
     }
 
     .lightbox-close, .lightbox-prev, .lightbox-next {
@@ -303,13 +306,13 @@
       display: block;
       margin-top: 0.5rem;
       font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: rgba(255,255,255,0.45);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 0.3rem 0.5rem;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.4rem 0.6rem;
       width: 100%;
-      max-width: 420px;
+      max-width: 500px;
       cursor: pointer;
       letter-spacing: 0.02em;
     }
