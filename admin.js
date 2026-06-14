@@ -1817,6 +1817,7 @@ async function advSave() {
     type,
     name,
     location_city:    ($('advCity')?.value.trim() || $('advCity')?.dataset?.original || null),
+    location_state:   ($('advState')?.value.trim() || $('advState')?.dataset?.original || null),
     location_country: ($('advCountry')?.value.trim() || $('advCountry')?.dataset?.original || null),
     visited_date:     $('advDate')?.value            || null,
     cuisine:          type === 'restaurant' ? ($('advCuisine')?.value.trim()  || null) : null,
@@ -2012,6 +2013,7 @@ function advResetForm() {
   renderAdvYtList();
   $('advLat').value              = '';
   $('advLng').value              = '';
+  if ($('advState')) $('advState').value = '';
   // advPlaceName removed
   const _autoEl = document.getElementById('advPlaceAutocomplete');
   if (_autoEl) _autoEl.value = '';
@@ -2271,19 +2273,22 @@ function initAdvLocationSearch() {
     const nameField = document.getElementById('advName');
     if (nameField) nameField.value = name;
 
-    let city = '', country = '';
+    let city = '', state = '', country = '';
     for (const c of (place.address_components || [])) {
       if (c.types.includes('locality') || c.types.includes('postal_town')) city = c.long_name;
       if (c.types.includes('administrative_area_level_2') && !city) city = c.long_name;
+      if (c.types.includes('administrative_area_level_1')) state = c.long_name;
       if (c.types.includes('country')) country = c.long_name;
     }
 
     const cityField    = document.getElementById('advCity');
+    const stateField   = document.getElementById('advState');
     const countryField = document.getElementById('advCountry');
     if (cityField)    cityField.value    = city;
+    if (stateField)   stateField.value   = state;
     if (countryField) countryField.value = country;
 
-    if (city || country) {
+    if (city || state || country) {
       const disc = document.querySelector('.adv-location-override');
       if (disc) disc.open = true;
     }
