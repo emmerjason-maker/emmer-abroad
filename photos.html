@@ -388,13 +388,7 @@
 
     <!-- Controls -->
     <div class="photos-controls">
-      <div class="photos-pills" id="tagPills">
-        <button class="photos-pill active" data-tag="all" onclick="setTag('all', this)">All</button>
-      </div>
-      <select class="photos-filter-select" id="tagDropdown" onchange="setTagFromDropdown(this)">
-        <option value="all">Filter by post…</option>
-      </select>
-      <input type="search" class="photos-search" id="photoSearch" placeholder="Search photos…" />
+      <input type="search" class="photos-search" id="photoSearch" placeholder="Search by tag, description, or post name…" />
     </div>
 
     <!-- Grid -->
@@ -530,12 +524,7 @@
     renderPhotos();
   }
 
-  function setTag(tag, btn) {
-    document.querySelectorAll('.photos-pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    activeTag = tag;
-    renderPhotos();
-  }
+  // Tag pill filtering removed — use search box instead
 
   // ── Render ───────────────────────────────────────────────────
   function renderPhotos() {
