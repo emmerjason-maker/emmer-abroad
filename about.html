@@ -211,7 +211,15 @@
 
   <div class="bg-kanji" aria-hidden="true">家</div>
 
-  <header class="site-header">
+  <header class="site-header" style="position:relative;">
+      <!-- ── Search overlay ──────────────────────────────────── -->
+      <div class="header-search-bar" id="headerSearchBar" role="search">
+        <input type="search" class="header-search-input" id="headerSearchInput"
+          placeholder="Search posts, places, adventures…"
+          aria-label="Search site" />
+        <span class="header-search-hint">Press Enter to search</span>
+        <button class="header-search-close" id="headerSearchClose" aria-label="Close search">✕</button>
+      </div>
     <div class="header-inner">
       <a href="index.html" class="logo">
         <span class="logo-kanji">日本</span>
@@ -228,6 +236,7 @@
         <a href="photos.html" class="nav-link">Photos</a>
         <a href="about.html" class="nav-link active">About</a>
       </nav>
+      <button class="search-toggle" aria-label="Search" aria-expanded="false" aria-controls="headerSearchBar">🔍</button>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
@@ -423,4 +432,5 @@
   </script>
 </body>
 </html>
+
 
