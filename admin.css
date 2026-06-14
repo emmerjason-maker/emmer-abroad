@@ -1027,3 +1027,70 @@ select.field-input { cursor: pointer; }
   color: var(--gold);
   margin-left: 0.4rem;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Admin — Place Search + Map Preview
+   ═══════════════════════════════════════════════════════════════ */
+
+.adv-place-suggestions {
+  position: absolute;
+  z-index: 200;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.adv-place-suggestions.hidden { display: none; }
+
+.adv-map-preview {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.adv-map-preview.hidden { display: none; }
+
+#advMapPreviewInner {
+  width: 100%;
+  height: 200px;
+}
+
+.adv-map-coords {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  padding: 0.35rem 0.5rem;
+  background: var(--surface-3);
+  border-top: 1px solid var(--border);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.pac-container {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border-2) !important;
+  border-top: none !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important;
+  z-index: 9999 !important;
+}
+
+.pac-item {
+  color: rgba(255,255,255,0.7) !important;
+  border-top: 1px solid var(--border) !important;
+  padding: 0.4rem 0.75rem !important;
+  cursor: pointer !important;
+}
+
+.pac-item:hover, .pac-item-selected {
+  background: var(--surface-3) !important;
+}
+
+.pac-item-query {
+  color: var(--white) !important;
+  font-size: 0.75rem !important;
+}
+
+.pac-matched { color: var(--gold) !important; }
