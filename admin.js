@@ -1553,15 +1553,13 @@ async function savePostEdit(filename) {
     // ── Location ─────────────────────────────────────────────────
     const existingLoc = doc.querySelector('.post-location');
     if (newLocation) {
+      const editLat = $('editLat')?.value || '';
+      const editLng = $('editLng')?.value || '';
       let locHtml = '';
-      if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
-        locHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
-      } else if (newLocation.includes('|')) {
-        const parts = newLocation.split('|').map(s => s.trim());
-        locHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
-      } else {
-        locHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
-      }
+      const editMapsUrl = (editLat && editLng)
+        ? `https://www.google.com/maps?q=${editLat},${editLng}`
+        : `https://www.google.com/maps/search/${encodeURIComponent(newLocation)}`;
+      locHtml = `<div class="post-location"><a href="${escHtml(editMapsUrl)}" target="_blank" rel="noopener">📍 ${escHtml(newLocation)}</a></div>`;
       const locNode = parser.parseFromString(locHtml, 'text/html').body.firstChild;
       if (existingLoc) existingLoc.replaceWith(locNode);
       else titleEl?.insertAdjacentElement('afterend', locNode);
@@ -2193,6 +2191,7 @@ let adminMapMarker    = null;
 
 window.initAdminMapsReady = async function() {
   initPostLocationSearch();
+  initEditLocationSearch();
   const inputWrap = document.getElementById('advPlaceSearch')?.parentElement;
   if (!inputWrap) return;
 
@@ -2625,6 +2624,69 @@ function showPostMapPreview(lat, lng, label) {
     postMapPreview.setCenter({ lat, lng });
     postMapMarker.setPosition({ lat, lng });
     postMapMarker.setTitle(label);
+  }
+
+  if (coords) coords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
+
+/* ── Edit Post Location — Places Autocomplete ────────────────────── */
+let editMapPreview = null;
+let editMapMarker  = null;
+
+function initEditLocationSearch() {
+  const input = document.getElementById('editLocationSearch');
+  if (!input) return;
+
+  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
+  placeAuto.id = 'editPlaceAutocomplete';
+  placeAuto.style.width = '100%';
+  placeAuto.style.fontFamily = 'var(--font-mono)';
+  input.replaceWith(placeAuto);
+
+  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
+    await place.fetchFields({ fields: ['displayName', 'location', 'formattedAddress'] });
+
+    const lat  = place.location?.lat();
+    const lng  = place.location?.lng();
+    const name = place.displayName || place.formattedAddress || '';
+
+    if (!lat || !lng) return;
+
+    document.getElementById('editLocationName').value = name;
+    document.getElementById('editLat').value = lat;
+    document.getElementById('editLng').value = lng;
+
+    showEditMapPreview(lat, lng, name);
+  });
+}
+
+function showEditMapPreview(lat, lng, label) {
+  const wrap   = document.getElementById('editMapPreview');
+  const inner  = document.getElementById('editMapPreviewInner');
+  const coords = document.getElementById('editMapCoords');
+  if (!wrap || !inner) return;
+
+  wrap.classList.remove('hidden');
+
+  if (!editMapPreview) {
+    editMapPreview = new google.maps.Map(inner, {
+      zoom: 14,
+      center: { lat, lng },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: adminMapStyles(),
+    });
+    editMapMarker = new google.maps.Marker({
+      position: { lat, lng },
+      map: editMapPreview,
+      title: label,
+    });
+  } else {
+    editMapPreview.setCenter({ lat, lng });
+    editMapMarker.setPosition({ lat, lng });
+    editMapMarker.setTitle(label);
   }
 
   if (coords) coords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
