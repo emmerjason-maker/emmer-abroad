@@ -69,6 +69,7 @@
         <button class="admin-tab active" id="tabNew" onclick="switchTab('new')">✏️ New Post</button>
         <button class="admin-tab" id="tabEdit" onclick="switchTab('edit')">📝 Edit Posts</button>
         <button class="admin-tab" id="tabAdventures" onclick="switchTab('adventures')">🗺️ Adventures</button>
+        <button class="admin-tab" id="tabImages" onclick="switchTab('images')">🖼️ Images</button>
       </div>
 
       <!-- ── NEW POST PANEL ─────────────────────────────────────── -->
@@ -486,6 +487,77 @@
         </div>
       </div><!-- end panelAdventures -->
 
+
+      <!-- ── IMAGES PANEL ───────────────────────────────────────── -->
+      <div id="panelImages" class="hidden">
+        <div class="adv-admin-layout">
+
+          <!-- Left: edit form -->
+          <div class="editor-panel">
+            <h2 class="panel-title" id="imgFormTitle">Edit Image</h2>
+            <p class="field-hint" style="margin-bottom:1.5rem;">Select an image from the list to edit its metadata.</p>
+
+            <div class="field-group">
+              <label class="field-label">Preview</label>
+              <div id="imgPreviewWrap" style="background:var(--surface-3);border:1px solid var(--border);min-height:120px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:rgba(255,255,255,0.2);font-size:0.75rem;font-family:var(--font-mono);">Select an image →</span>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Alt Text</label>
+              <input type="text" class="field-input" id="imgAltText" placeholder="Describe what's in the photo…" />
+              <p class="field-hint">Used for accessibility and SEO. Be specific: who, what, where.</p>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Tags <span class="optional">comma separated</span></label>
+              <input type="text" class="field-input" id="imgTags" placeholder="pool, john, nas-jax, summer" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Link to Post <span class="optional">optional</span></label>
+              <input type="text" class="field-input" id="imgPostUrl" placeholder="posts/my-post.html" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Link to Adventure <span class="optional">optional — paste adventure ID</span></label>
+              <input type="text" class="field-input" id="imgAdventureId" placeholder="uuid from adventures table" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" style="gap:1.5rem;">
+                <span>Featured / Cover photo?</span>
+                <input type="checkbox" id="imgFeatured" style="width:auto;" />
+              </label>
+            </div>
+
+            <input type="hidden" id="imgEditId" value="" />
+
+            <div class="publish-row">
+              <button class="btn-ghost" id="imgCancelBtn" style="display:none;">Cancel</button>
+              <button class="btn-publish" id="imgSaveBtn" disabled>
+                <span id="imgSaveLabel">Select an image to edit</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: image list -->
+          <div class="editor-panel" style="min-width:0;">
+            <h2 class="panel-title">All Images <span id="imgCount" style="font-family:var(--font-mono);font-size:0.7rem;color:rgba(255,255,255,0.3);font-weight:400;"></span></h2>
+
+            <div class="adv-admin-filter" style="margin-bottom:1rem;">
+              <input type="search" class="field-input" id="imgSearch" placeholder="Search by alt text or tag…" style="font-size:0.75rem;padding:0.4rem 0.75rem;" />
+            </div>
+
+            <div id="imgAdminList" class="img-admin-list">
+              <p class="preview-empty">Loading images…</p>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- end panelImages -->
+
     </main>
   </div>
 
@@ -501,5 +573,6 @@
   </script>
 </body>
 </html>
+
 
 
