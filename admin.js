@@ -1783,9 +1783,17 @@ async function advSave() {
   const editId = $('advEditId')?.value;
   const isEdit = !!editId;
 
-  const name    = $('advName')?.value.trim();
+  // Name can come from advName field OR be auto-filled from place search
+  const placeAutoEl = document.getElementById('advPlaceAutocomplete');
+  const placeSearchVal = placeAutoEl?.value?.trim() || $('advPlaceSearch')?.value?.trim() || '';
+  let name = $('advName')?.value.trim();
+  // If name is empty but place search has a value, use the first part of it
+  if (!name && placeSearchVal) {
+    name = placeSearchVal.split(',')[0].trim();
+    if ($('advName')) $('advName').value = name;
+  }
   const type    = $('advType')?.value;
-  if (!name)    { showStatus('Name is required.', true); return; }
+  if (!name)    { showStatus('Name is required — search a location or type a name.', true); return; }
   if (!type)    { showStatus('Type is required.', true); return; }
 
   // Build family_reactions object — only checked members
@@ -2246,9 +2254,9 @@ window.initAdminMapsReady = async function() {
     document.getElementById('advLat').value = lat;
     document.getElementById('advLng').value = lng;
 
-    // Auto-fill name if empty
+    // Auto-fill name from place (always update so it stays in sync with search)
     const nameField = document.getElementById('advName');
-    if (nameField && !nameField.value) nameField.value = name;
+    if (nameField) nameField.value = name;
 
     // Auto-fill city and country from address components
     const components = place.addressComponents || [];
