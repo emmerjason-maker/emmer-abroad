@@ -633,6 +633,8 @@
 /* ─── Blog Search ───────────────────────────────────────────────── */
 .blog-search-bar {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .blog-search-input {
