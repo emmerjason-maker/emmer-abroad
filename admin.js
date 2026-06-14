@@ -1828,7 +1828,7 @@ async function advSave() {
     tags:             tags.length ? tags : null,
     photos:           allAdvPhotos().length ? allAdvPhotos() : null,
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
-    place_name:       $('advPlaceName')?.value.trim()  || null,
+    place_name:       $('advName')?.value.trim()        || null,
     lat:              parseFloat($('advLat')?.value)  || null,
     lng:              parseFloat($('advLng')?.value)  || null,
     post_url:         $('advPostUrl')?.value.trim()   || null,
@@ -1913,7 +1913,7 @@ function advEdit(id) {
   renderAdvYtList();
   $('advLat').value        = a.lat || '';
   $('advLng').value        = a.lng || '';
-  $('advPlaceName').value  = a.place_name || '';
+  // place_name stored in advName; no separate advPlaceName field
   // Set value on PlaceAutocompleteElement (may have replaced advPlaceSearch)
   const advAutoEl = document.getElementById('advPlaceAutocomplete');
   if (advAutoEl) advAutoEl.value = a.place_name || '';
@@ -1998,7 +1998,7 @@ function advResetForm() {
   renderAdvYtList();
   $('advLat').value              = '';
   $('advLng').value              = '';
-  $('advPlaceName').value        = '';
+  // advPlaceName removed
   $('advPlaceSearch').value      = '';
   document.getElementById('advMapPreview')?.classList.add('hidden');
   $('advPostUrl').value          = '';
