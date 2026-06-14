@@ -1802,7 +1802,7 @@ async function advSave() {
     visited_date:     $('advDate')?.value            || null,
     cuisine:          type === 'restaurant' ? ($('advCuisine')?.value.trim()  || null) : null,
     price_range:      type === 'restaurant' ? ($('advPrice')?.value           || null) : null,
-    rating:           type === 'restaurant' ? (parseInt($('advRating')?.value) || null) : null,
+    rating:           type === 'restaurant' ? (parseFloat($('advRating')?.value) || null) : null,
     kid_friendly:     type === 'restaurant' ? ($('advKidFriendly')?.checked ?? null) : null,
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
     notes:            $('advNotes')?.value.trim()    || null,
