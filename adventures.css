@@ -345,21 +345,24 @@
   font-size: 0.65rem;
 }
 
-/* Stars */
+/* Stars — SVG quarter-star */
 .adv-stars {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
-.adv-star {
-  font-size: 0.85rem;
-  color: var(--paper-dark);
-  line-height: 1;
+.adv-star-svg {
+  display: block;
+  flex-shrink: 0;
 }
 
-.adv-star.filled {
-  color: var(--gold);
+.adv-rating-num {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  margin-left: 0.3rem;
+  letter-spacing: 0.05em;
 }
 
 /* Tags */
@@ -540,3 +543,4 @@
   .adv-stat { padding: 0.6rem 1rem; }
   .adv-stat-num { font-size: 1.5rem; }
 }
+
