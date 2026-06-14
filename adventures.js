@@ -172,11 +172,12 @@ function renderCard(a) {
       </div>`;
   }
 
-  // Stars
+  // Stars — quarter-star SVG rendering
   let starsHtml = '';
   if (a.rating) {
     starsHtml = `<div class="adv-stars" aria-label="${a.rating} out of 5 stars">
-      ${[1,2,3,4,5].map(i => `<span class="adv-star ${i <= a.rating ? 'filled' : ''}">★</span>`).join('')}
+      ${renderStarsSvg(parseFloat(a.rating))}
+      <span class="adv-rating-num">${parseFloat(a.rating).toFixed(2).replace(/\.?0+$/, '')}</span>
     </div>`;
   }
 
@@ -308,6 +309,31 @@ function updateLightboxImg() {
   $('advLightboxNext').style.display = lightboxPhotos.length > 1 ? '' : 'none';
 }
 
+// ── Quarter-star SVG renderer ─────────────────────────────────────
+function renderStarsSvg(rating) {
+  const SIZE = 16;
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    const fill = Math.min(1, Math.max(0, rating - (i - 1)));
+    // fill: 0=empty, 0.25=quarter, 0.5=half, 0.75=three-quarter, 1=full
+    const pct = Math.round(fill * 4) / 4; // snap to nearest quarter
+    const fillPct = Math.round(pct * 100);
+
+    stars.push(`
+      <svg width="${SIZE}" height="${SIZE}" viewBox="0 0 16 16" class="adv-star-svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="sg${i}r${Math.round(rating*100)}">
+            <stop offset="${fillPct}%" stop-color="var(--gold)" />
+            <stop offset="${fillPct}%" stop-color="var(--paper-dark)" />
+          </linearGradient>
+        </defs>
+        <path fill="url(#sg${i}r${Math.round(rating*100)})"
+          d="M8 1l1.8 3.6 4 .6-2.9 2.8.7 4L8 10 4.4 12l.7-4L2.2 5.2l4-.6z"/>
+      </svg>`);
+  }
+  return stars.join('');
+}
+
 // ── Util ──────────────────────────────────────────────────────────
 function escHtml(str) {
   if (!str) return '';
@@ -317,3 +343,4 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
