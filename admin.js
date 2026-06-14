@@ -2243,58 +2243,46 @@ let adminMapPreview   = null;
 let adminMapMarker    = null;
 
 window.initAdminMapsReady = async function() {
+  initAdvLocationSearch();
   initPostLocationSearch();
   initEditLocationSearch();
-  const inputWrap = document.getElementById('advPlaceSearch')?.parentElement;
-  if (!inputWrap) return;
+}
 
-  // Use new PlaceAutocompleteElement (replaces deprecated Autocomplete)
-  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
-  placeAuto.id = 'advPlaceAutocomplete';
-  placeAuto.style.width = '100%';
-  placeAuto.style.fontFamily = 'var(--font-mono)';
+function initAdvLocationSearch() {
+  const input = document.getElementById('advPlaceSearch');
+  if (!input) return;
 
-  // Replace the text input with the new element
-  const oldInput = document.getElementById('advPlaceSearch');
-  if (oldInput) oldInput.replaceWith(placeAuto);
+  // Classic Autocomplete — reliable, works with all key restrictions
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['name', 'geometry', 'address_components'],
+  });
 
-  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
-    await place.fetchFields({ fields: ['displayName', 'location', 'addressComponents'] });
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) return;
 
-    const lat  = place.location?.lat();
-    const lng  = place.location?.lng();
-    const name = place.displayName || '';
-
-    if (!lat || !lng) return;
+    const lat  = place.geometry.location.lat();
+    const lng  = place.geometry.location.lng();
+    const name = place.name || '';
 
     document.getElementById('advLat').value = lat;
     document.getElementById('advLng').value = lng;
 
-    // Auto-fill name from place (always update so it stays in sync with search)
     const nameField = document.getElementById('advName');
     if (nameField) nameField.value = name;
 
-    // Auto-fill city and country from address components
-    const components = place.addressComponents || [];
     let city = '', country = '';
-    for (const c of components) {
-      const types = c.types || [];
-      if (types.includes('locality') || types.includes('postal_town')) {
-        city = c.longText || c.shortText || '';
-      }
-      if (types.includes('administrative_area_level_2') && !city) {
-        city = c.longText || '';
-      }
-      if (types.includes('country')) {
-        country = c.longText || '';
-      }
+    for (const c of (place.address_components || [])) {
+      if (c.types.includes('locality') || c.types.includes('postal_town')) city = c.long_name;
+      if (c.types.includes('administrative_area_level_2') && !city) city = c.long_name;
+      if (c.types.includes('country')) country = c.long_name;
     }
 
     const cityField    = document.getElementById('advCity');
     const countryField = document.getElementById('advCountry');
-    if (cityField    && !cityField.value)    cityField.value    = city;
-    if (countryField && !countryField.value) countryField.value = country;
-    // Auto-open the override disclosure so user can see what was filled
+    if (cityField)    cityField.value    = city;
+    if (countryField) countryField.value = country;
+
     if (city || country) {
       const disc = document.querySelector('.adv-location-override');
       if (disc) disc.open = true;
