@@ -128,6 +128,22 @@
       <div id="advGrid" class="adv-grid"></div>
     </div>
 
+
+    <!-- ── Map Section ───────────────────────────────────────── -->
+    <div class="adv-map-section">
+      <div class="adv-map-header">
+        <h2 class="adv-map-title">On the Map</h2>
+        <a href="map.html" class="adv-map-fullscreen">Full map →</a>
+      </div>
+      <div class="adv-map-embed" id="advMapEmbed">
+        <div class="adv-map-loading" id="advMapLoading">
+          <div class="adv-loading-kanji" style="font-size:2rem;">地</div>
+          <p>Loading map…</p>
+        </div>
+        <div id="advEmbedMap" style="width:100%;height:100%;"></div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── FOOTER (matches site footer) ─────────────────────────────── -->
@@ -155,6 +171,7 @@
     <img class="adv-lightbox-img" id="advLightboxImg" src="" alt="" />
   </div>
 
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbNcDKZqf-4SdsAG6qR2_DtblVWulvyZg&libraries=places&callback=initAdvEmbedMap" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="adventures.js"></script>
   <script src="main.js"></script>
