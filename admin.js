@@ -2075,7 +2075,8 @@ function imgRenderList() {
   }
 
   list.innerHTML = filtered.map(img => {
-    const tags = (img.tags || []).map(t => `<span class="adv-tag">${escHtmlAdmin(t)}</span>`).join('');
+    const tags = (img.tags || []).slice(0, 3).map(t => `<span class="adv-tag">${escHtmlAdmin(t)}</span>`).join(' ');
+    const tagCount = (img.tags || []).length > 3 ? `<span class="adv-tag">+${img.tags.length - 3}</span>` : '';
     const featured = img.featured ? '<span class="img-featured-badge">★ cover</span>' : '';
     const altDisplay = img.alt_text || '<span style="color:rgba(255,255,255,0.25);font-style:italic;">no alt text</span>';
     return `
@@ -2086,7 +2087,7 @@ function imgRenderList() {
         <div class="img-admin-info">
           <div class="img-admin-alt">${altDisplay} ${featured}</div>
           <div class="img-admin-post">${escHtmlAdmin(img.post_url || '—')}</div>
-          <div class="img-admin-tags">${tags}</div>
+          <div class="img-admin-tags">${tags}${tagCount}</div>
         </div>
       </div>`;
   }).join('');
