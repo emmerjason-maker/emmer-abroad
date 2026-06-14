@@ -1900,7 +1900,10 @@ function advEdit(id) {
   $('advLat').value        = a.lat || '';
   $('advLng').value        = a.lng || '';
   $('advPlaceName').value  = a.place_name || '';
-  $('advPlaceSearch').value = a.place_name || '';
+  // Set value on PlaceAutocompleteElement (may have replaced advPlaceSearch)
+  const advAutoEl = document.getElementById('advPlaceAutocomplete');
+  if (advAutoEl) advAutoEl.value = a.place_name || '';
+  else if ($('advPlaceSearch')) $('advPlaceSearch').value = a.place_name || '';
   if (a.lat && a.lng) {
     showAdminMapPreview(parseFloat(a.lat), parseFloat(a.lng), a.place_name || a.name);
   }
