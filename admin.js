@@ -2035,7 +2035,14 @@ async function imgAdminLoad() {
       { headers: { 'apikey': IMG_SUPABASE_ANON, 'Authorization': `Bearer ${IMG_SUPABASE_ANON}` } }
     );
     if (!res.ok) throw new Error('Failed to load');
-    imgAllEntries = await res.json();
+    const raw = await res.json();
+    // Deduplicate by URL — keep most recent (first occurrence since ordered desc)
+    const seen = new Set();
+    imgAllEntries = raw.filter(img => {
+      if (seen.has(img.url)) return false;
+      seen.add(img.url);
+      return true;
+    });
     imgRenderList();
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
