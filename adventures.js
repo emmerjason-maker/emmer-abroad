@@ -352,3 +352,101 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+
+/* ── Embedded map on adventures page ────────────────────────────── */
+let advEmbedMap    = null;
+let advEmbedMarkers = [];
+const ADV_PIN_COLORS = { restaurant: '#c0392b', place: '#b8922a', country: '#1a1714' };
+
+function initAdvEmbedMap() {
+  const el = document.getElementById('advEmbedMap');
+  if (!el) return;
+
+  advEmbedMap = new google.maps.Map(el, {
+    zoom: 4,
+    center: { lat: 30, lng: -80 },
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    zoomControl: true,
+    styles: advMapStyles(),
+  });
+
+  // Wait for adventures to load, then place pins
+  // allAdventures is populated by loadAdventures()
+  const checkReady = setInterval(() => {
+    if (allAdventures.length > 0 || document.getElementById('advLoading')?.classList.contains('hidden')) {
+      clearInterval(checkReady);
+      placeAdvEmbedMarkers();
+    }
+  }, 300);
+}
+
+function placeAdvEmbedMarkers() {
+  advEmbedMarkers.forEach(m => m.setMap(null));
+  advEmbedMarkers = [];
+
+  const infoWindow = new google.maps.InfoWindow({ maxWidth: 240 });
+  const mapped = allAdventures.filter(a => a.lat && a.lng);
+
+  if (!mapped.length) {
+    document.getElementById('advMapLoading').innerHTML =
+      '<p style="font-family:var(--font-mono);font-size:0.7rem;">No mapped locations yet — add lat/lng in the admin panel.</p>';
+    return;
+  }
+
+  document.getElementById('advMapLoading').style.display = 'none';
+
+  mapped.forEach(a => {
+    const marker = new google.maps.Marker({
+      position: { lat: parseFloat(a.lat), lng: parseFloat(a.lng) },
+      map: advEmbedMap,
+      title: a.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 7,
+        fillColor: ADV_PIN_COLORS[a.type] || '#666',
+        fillOpacity: 0.92,
+        strokeColor: '#fff',
+        strokeWeight: 1.5,
+      },
+    });
+
+    marker.addListener('click', () => {
+      const loc = [a.location_city, a.location_country].filter(Boolean).join(', ');
+      infoWindow.setContent(
+        '<div style="padding:0.75rem;min-width:160px;font-family:var(--font-body);">' +
+        '<div style="font-family:var(--font-mono);font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-faint);margin-bottom:0.2rem;">' + (a.type || '') + '</div>' +
+        '<div style="font-family:var(--font-display);font-size:1rem;color:var(--ink);margin-bottom:0.15rem;">' + esc(a.name) + '</div>' +
+        (loc ? '<div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--ink-faint);">' + esc(loc) + '</div>' : '') +
+        '</div>'
+      );
+      infoWindow.open(advEmbedMap, marker);
+    });
+
+    advEmbedMarkers.push(marker);
+  });
+
+  // Fit to markers
+  if (mapped.length === 1) {
+    advEmbedMap.setCenter({ lat: parseFloat(mapped[0].lat), lng: parseFloat(mapped[0].lng) });
+    advEmbedMap.setZoom(13);
+  } else {
+    const bounds = new google.maps.LatLngBounds();
+    mapped.forEach(a => bounds.extend({ lat: parseFloat(a.lat), lng: parseFloat(a.lng) }));
+    advEmbedMap.fitBounds(bounds, { padding: 40 });
+  }
+}
+
+function advMapStyles() {
+  return [
+    { elementType: 'geometry', stylers: [{ color: '#f5f0e8' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#1a1714' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f0e8' }] },
+    { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#c9c0b0' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#e8e0d0' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c0d4e8' }] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  ];
+}
