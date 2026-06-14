@@ -12,7 +12,7 @@ const CONFIG = {
   branch:    'main',
   blogFile:  'blog.html',
   maxImages: 10,
-  maxSizeMB: 25,
+  maxSizeMB:    200,
 };
 
 // ── State ─────────────────────────────────────────────────────────
