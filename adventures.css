@@ -544,3 +544,63 @@
   .adv-stat-num { font-size: 1.5rem; }
 }
 
+
+/* ── Map embed on adventures page ───────────────────────────────── */
+.adv-map-section {
+  margin-top: 3rem;
+  border-top: 1px solid var(--paper-dark);
+  padding-top: 2rem;
+}
+
+.adv-map-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.adv-map-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.adv-map-fullscreen {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.adv-map-fullscreen:hover { opacity: 0.7; }
+
+.adv-map-embed {
+  width: 100%;
+  height: 420px;
+  border: 1px solid var(--paper-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.adv-map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--paper-warm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  z-index: 2;
+}
+
+@media (max-width: 640px) {
+  .adv-map-embed { height: 280px; }
+}
