@@ -572,6 +572,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         <a href="../index.html" class="nav-link">Home</a>
         <a href="../blog.html" class="nav-link active">Journal</a>
         <a href="../adventures.html" class="nav-link">Adventures</a>
+        <a href="../map.html" class="nav-link">Map</a>
         <a href="../index.html#videos" class="nav-link">Videos</a>
         <a href="../photos.html" class="nav-link">Photos</a>
         <a href="../about.html" class="nav-link">About</a>
