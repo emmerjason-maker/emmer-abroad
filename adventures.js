@@ -39,9 +39,6 @@ async function loadAdventures() {
     if (!advRes.ok) throw new Error(`Supabase error: ${advRes.status}`);
     allAdventures    = await advRes.json();
     allPostLocations = postRes.ok ? await postRes.json() : [];
-    console.log('[Adventures] rows:', allAdventures.length);
-    console.log('[Adventures] statuses:', [...new Set(allAdventures.map(a => a.status))]);
-    console.log('[Adventures] countries:', [...new Set(allAdventures.map(a => a.location_country).filter(Boolean))]);
     const loadEl = $('advLoading');
     if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
     adventuresLoaded = true;
@@ -138,7 +135,6 @@ function updateStats(data) {
   data.forEach(a => addCountry(a.location_region, a.location_country));
   (allPostLocations || []).forEach(p => addCountry(p.location_region, p.location_country));
 
-  console.log('[updateStats] countrySet:', [...countrySet], 'size:', countrySet.size);
   if (elC) elC.textContent = countrySet.size;
 }
 
@@ -193,10 +189,9 @@ function renderCard(a) {
     try { photos = JSON.parse(photos); } catch(e) { photos = []; }
   }
   if (!Array.isArray(photos)) photos = [];
+  // Normalize root-relative URLs to absolute
+  photos = photos.map(p => p && p.startsWith('/') ? 'https://emmericanadventure.com' + p : p);
   const coverPhoto = photos[0] || null;
-  if (a.name === 'St Patrick\'s Cathedral') {
-    console.log('[photo debug]', a.name, 'raw:', JSON.stringify(a.photos), 'parsed:', photos, 'cover:', coverPhoto);
-  }
 
   // Photo area
   let photoHtml;
