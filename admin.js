@@ -1813,8 +1813,21 @@ async function advSave() {
   // Upload any queued image files first, get their GitHub URLs
   let uploadedPhotoUrls = [];
   if (advImages && advImages.length > 0) {
+    const pat = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+    if (!pat) {
+      showStatus('✗ No GitHub token found — sign out and sign back in to upload photos.', true);
+      $('advSaveLabel').textContent = 'Save Adventure →';
+      $('advSaveBtn').disabled = false;
+      return;
+    }
     $('advSaveLabel').textContent = 'Uploading photos…';
     uploadedPhotoUrls = await uploadAdvImages();
+    if (uploadedPhotoUrls.length === 0 && advImages.length > 0) {
+      showStatus('✗ Photo upload failed — your GitHub token may be expired. Sign out and sign back in.', true);
+      $('advSaveLabel').textContent = 'Save Adventure →';
+      $('advSaveBtn').disabled = false;
+      return;
+    }
   }
 
   // Tags — comma separated
@@ -1836,11 +1849,7 @@ async function advSave() {
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
-    photos:           (() => {
-      const p = allAdvPhotos(uploadedPhotoUrls);
-      console.log('[advSave] photos to save:', p, 'textarea value:', document.getElementById('advPhotos')?.value);
-      return p.length ? p : null;
-    })(),
+    photos:           allAdvPhotos(uploadedPhotoUrls).length ? allAdvPhotos(uploadedPhotoUrls) : null,
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advName')?.value.trim()        || null,
     lat:              parseFloat($('advLat')?.value || $('advLat')?.dataset?.original) || null,
