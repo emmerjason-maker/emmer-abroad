@@ -83,7 +83,7 @@ function renderAll() {
     if (activeType !== 'all' && activeType !== 'country' && a.type !== activeType) return false;
     if (activeType === 'country') return false; // countries are derived, not a type
     if (query) {
-      const haystack = [a.name, a.location_city, a.location_country, a.cuisine, a.notes, ...(a.tags || [])]
+      const haystack = [a.name, a.location_city, a.location_region, a.location_country, a.cuisine, a.notes, ...(a.tags || [])]
         .filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(query)) return false;
     }
@@ -271,9 +271,10 @@ function renderCard(a) {
     </div>` : '';
 
   // Location line
-  const locParts = [a.location_city, a.location_state, a.location_country].filter(Boolean);
-  const locHtml = locParts.length
-    ? `<p class="adv-card-location">${escHtml(locParts.join(', '))}</p>`
+  const locParts = [a.location_city, a.location_region, a.location_country].filter(Boolean);
+  const locUniq = locParts.filter((v, i, arr) => arr.indexOf(v) === i);
+  const locHtml = locUniq.length
+    ? `<p class="adv-card-location">${escHtml(locUniq.join(', '))}</p>`
     : '';
 
   // Cuisine
