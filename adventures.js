@@ -114,14 +114,20 @@ function renderAll() {
 }
 
 function updateStats(data) {
-  $('statRestaurants').textContent = data.filter(a => a.type === 'restaurant').length;
-  $('statPlaces').textContent      = data.filter(a => a.type === 'place').length;
+  const elR = document.getElementById('statRestaurants');
+  const elP = document.getElementById('statPlaces');
+  const elC = document.getElementById('statCountries');
+
+  if (elR) elR.textContent = data.filter(a => a.type === 'restaurant').length;
+  if (elP) elP.textContent = data.filter(a => a.type === 'place').length;
 
   // Derive countries from unique location_country values across adventures + post_locations
   const countrySet = new Set();
   data.forEach(a => { if (a.location_country) countrySet.add(a.location_country.trim()); });
-  allPostLocations.forEach(p => { if (p.location_country) countrySet.add(p.location_country.trim()); });
-  $('statCountries').textContent = countrySet.size;
+  (allPostLocations || []).forEach(p => { if (p.location_country) countrySet.add(p.location_country.trim()); });
+
+  console.log('[updateStats] countrySet:', [...countrySet], 'size:', countrySet.size, 'elC:', elC);
+  if (elC) elC.textContent = countrySet.size;
 }
 
 function groupAdventures(data) {
