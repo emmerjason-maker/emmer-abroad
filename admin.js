@@ -1836,7 +1836,11 @@ async function advSave() {
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
-    photos:           allAdvPhotos(uploadedPhotoUrls).length ? allAdvPhotos(uploadedPhotoUrls) : null,
+    photos:           (() => {
+      const p = allAdvPhotos(uploadedPhotoUrls);
+      console.log('[advSave] photos to save:', p, 'textarea value:', document.getElementById('advPhotos')?.value);
+      return p.length ? p : null;
+    })(),
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advName')?.value.trim()        || null,
     lat:              parseFloat($('advLat')?.value || $('advLat')?.dataset?.original) || null,
