@@ -1806,8 +1806,12 @@ async function advSave() {
   });
 
   // Photos — one URL per line
-  const photosRaw = $('advPhotos')?.value || '';
-  const photos = photosRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  // Upload any queued image files first, get their GitHub URLs
+  let uploadedPhotoUrls = [];
+  if (advImages && advImages.length > 0) {
+    $('advSaveLabel').textContent = 'Uploading photos…';
+    uploadedPhotoUrls = await uploadAdvImages();
+  }
 
   // Tags — comma separated
   const tagsRaw = $('advTags')?.value || '';
@@ -1827,7 +1831,7 @@ async function advSave() {
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
-    photos:           allAdvPhotos().length ? allAdvPhotos() : null,
+    photos:           allAdvPhotos(uploadedPhotoUrls).length ? allAdvPhotos(uploadedPhotoUrls) : null,
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advName')?.value.trim()        || null,
     lat:              parseFloat($('advLat')?.value || $('advLat')?.dataset?.original) || null,
@@ -2394,11 +2398,11 @@ function advRemoveImage(id) {
   renderAdvImageList();
 }
 
-// Returns all photo URLs: uploaded (after push) + pasted
-function allAdvPhotos() {
+// Returns all photo URLs: uploaded + pasted
+function allAdvPhotos(uploadedUrls = []) {
   const pasted = (document.getElementById('advPhotos')?.value || '')
-    .split('\n').map(s => s.trim()).filter(Boolean);
-  return pasted; // uploaded ones get pushed during save and appended
+    .split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  return [...uploadedUrls, ...pasted];
 }
 
 // Upload adventure images to GitHub and return URLs
