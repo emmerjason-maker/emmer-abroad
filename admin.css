@@ -1055,7 +1055,9 @@ select.field-input { cursor: pointer; }
 
 .adv-map-preview.hidden { display: none; }
 
-#advMapPreviewInner {
+#advMapPreviewInner,
+#editMapPreviewInner,
+#plMapPreviewInner {
   width: 100%;
   height: 200px;
 }
