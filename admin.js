@@ -1824,7 +1824,8 @@ async function advSave() {
   const payload = {
     type,
     name,
-    location_city:    ($('advCity')?.value.trim() || $('advCity')?.dataset?.original || null),
+    location_city:    ($('advCity')?.value.trim()    || null),
+    location_region:  ($('advRegion')?.value.trim()  || null),
     location_state:   ($('advState')?.value.trim() || $('advState')?.dataset?.original || null),
     location_country: ($('advCountry')?.value.trim() || $('advCountry')?.dataset?.original || null),
     visited_date:     $('advDate')?.value            || null,
@@ -2021,6 +2022,7 @@ function advResetForm() {
   renderAdvYtList();
   $('advLat').value              = '';
   $('advLng').value              = '';
+  if ($('advRegion')) $('advRegion').value = '';
   if ($('advState')) $('advState').value = '';
   // advPlaceName removed
   const _autoEl = document.getElementById('advPlaceAutocomplete');
@@ -2289,10 +2291,18 @@ function initAdvLocationSearch() {
       if (c.types.includes('country')) country = c.long_name;
     }
 
+    // For UK addresses, use the nation (Scotland/England/Wales/N.Ireland) as the country
+    const UK_NATIONS = ['Scotland', 'England', 'Wales', 'Northern Ireland'];
+    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) {
+      country = state;
+    }
+
     const cityField    = document.getElementById('advCity');
+    const regionField  = document.getElementById('advRegion');
     const countryField = document.getElementById('advCountry');
     // Only fill if fields are empty — don't overwrite user's manual entry
-    if (cityField && !cityField.value)       cityField.value    = city || state;
+    if (cityField && !cityField.value)       cityField.value    = city;
+    if (regionField && !regionField.value)   regionField.value  = state;
     if (countryField && !countryField.value) countryField.value = country;
 
     // Always show mini map preview
@@ -2810,10 +2820,18 @@ function initPostLocMaps() {
     let city = '', country = '';
     for (const c of (place.address_components || [])) {
       if (c.types.includes('locality') || c.types.includes('postal_town')) city = c.long_name;
-      if (c.types.includes('administrative_area_level_1') && !city) city = c.long_name;
+      if (c.types.includes('administrative_area_level_1')) state = c.long_name;
       if (c.types.includes('country')) country = c.long_name;
     }
+
+    // For UK addresses, use the nation (Scotland/England/Wales/N.Ireland) as the country
+    const UK_NATIONS = ['Scotland', 'England', 'Wales', 'Northern Ireland'];
+    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) {
+      country = state;
+    }
+
     if ($('plCity') && !$('plCity').value)       $('plCity').value    = city;
+    if ($('plRegion') && !$('plRegion').value)   $('plRegion').value  = state;
     if ($('plCountry') && !$('plCountry').value) $('plCountry').value = country;
 
     plShowMapPreview(lat, lng, name);
@@ -2907,6 +2925,7 @@ async function plSave() {
     place_name:       $('plPlaceName')?.value.trim() || null,
     lat, lng,
     location_city:    $('plCity')?.value.trim()    || null,
+    location_region:  $('plRegion')?.value.trim()  || null,
     location_country: $('plCountry')?.value.trim() || null,
     visited_date:     $('plDate')?.value           || null,
     created_by:       PL_ADMIN,
@@ -2947,7 +2966,8 @@ function plEdit(id) {
   $('plEditId').value      = p.id;
   $('plPostUrl').value     = p.post_url || '';
   $('plPlaceName').value   = p.place_name || '';
-  $('plCity').value        = p.location_city || '';
+  $('plCity').value        = p.location_city   || '';
+  if ($('plRegion')) $('plRegion').value = p.location_region || '';
   $('plCountry').value     = p.location_country || '';
   $('plDate').value        = p.visited_date || '';
   $('plLat').value         = p.lat || '';
@@ -2976,6 +2996,7 @@ function plReset() {
   $('plPostUrl').value      = '';
   $('plPlaceName').value    = '';
   $('plCity').value         = '';
+  if ($('plRegion')) $('plRegion').value = '';
   $('plCountry').value      = '';
   $('plDate').value         = '';
   $('plLat').value          = '';
