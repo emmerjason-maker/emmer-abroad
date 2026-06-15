@@ -1807,7 +1807,7 @@ async function advSave() {
 
   // Photos — one URL per line
   const photosRaw = $('advPhotos')?.value || '';
-  const photos = photosRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  const photos = photosRaw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
   // Tags — comma separated
   const tagsRaw = $('advTags')?.value || '';
@@ -2282,20 +2282,14 @@ function initAdvLocationSearch() {
     }
 
     const cityField    = document.getElementById('advCity');
-    const stateField   = document.getElementById('advState');
     const countryField = document.getElementById('advCountry');
-    if (cityField)    cityField.value    = city;
-    if (stateField)   stateField.value   = state;
-    if (countryField) countryField.value = country;
+    // Only fill if fields are empty — don't overwrite user's manual entry
+    if (cityField && !cityField.value)       cityField.value    = city || state;
+    if (countryField && !countryField.value) countryField.value = country;
 
-    if (city || state || country) {
-      const disc = document.querySelector('.adv-location-override');
-      if (disc) disc.open = true;
-    }
-
+    // Always show mini map preview
     showAdminMapPreview(lat, lng, name);
-  });
-}
+  });}
 
 function showAdminMapPreview(lat, lng, label) {
   const wrap = document.getElementById('advMapPreview');
