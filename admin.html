@@ -753,8 +753,10 @@
     async function initAdminMaps() {
       await google.maps.importLibrary("places");
       await google.maps.importLibrary("maps");
-      // Defined in admin.js
+      // Init Adventures autocomplete (defined in admin.js)
       if (typeof window.initAdminMapsReady === 'function') window.initAdminMapsReady();
+      // Init Post Locations autocomplete (defined in admin.js)
+      if (typeof window.initPostLocMaps === 'function') window.initPostLocMaps();
     }
     window.addEventListener('load', initAdminMaps);
   </script>
