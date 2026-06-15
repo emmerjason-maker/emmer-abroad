@@ -1578,6 +1578,48 @@ async function savePostEdit(filename) {
       existingLoc.remove();
     }
 
+    // ── Save location to Supabase post_locations ─────────────────
+    if (newLocation) {
+      const editLat2 = parseFloat($('editLat')?.value) || null;
+      const editLng2 = parseFloat($('editLng')?.value) || null;
+      if (editLat2 && editLng2) {
+        const postUrl = 'posts/' + filename;
+        try {
+          // Check if entry already exists for this post
+          const checkRes = await fetch(
+            'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_locations?post_url=eq.' + encodeURIComponent(postUrl),
+            { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44' } }
+          );
+          const existing = checkRes.ok ? await checkRes.json() : [];
+          const locPayload = {
+            post_url: postUrl,
+            post_title: newTitle,
+            place_name: newLocation,
+            lat: editLat2,
+            lng: editLng2,
+            created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+          };
+          const method = existing.length ? 'PATCH' : 'POST';
+          const locUrl = 'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_locations'
+            + (existing.length ? '?post_url=eq.' + encodeURIComponent(postUrl) : '');
+          await fetch(locUrl, {
+            method,
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify(locPayload),
+          });
+          console.log('[savePostEdit] location saved to Supabase:', locPayload);
+        } catch(locErr) {
+          console.warn('[savePostEdit] location Supabase save failed:', locErr);
+        }
+      }
+    }
+
     // ── Body ─────────────────────────────────────────────────────
     const bodyEl = doc.querySelector('.post-body');
     if (!bodyEl) throw new Error('Could not find post-body in HTML');
