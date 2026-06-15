@@ -23,20 +23,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ── Supabase fetch ────────────────────────────────────────────────
+let allPostLocations = [];
+
 async function loadAdventures() {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc`,
-      {
-        headers: {
-          'apikey': SUPABASE_ANON,
-          'Authorization': `Bearer ${SUPABASE_ANON}`,
-        }
-      }
-    );
+    const headers = {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+    };
+    const [advRes, postRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc`, { headers }),
+      fetch(`${SUPABASE_URL}/rest/v1/post_locations?select=*&order=created_at.desc`, { headers }),
+    ]);
 
-    if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
-    allAdventures = await res.json();
+    if (!advRes.ok) throw new Error(`Supabase error: ${advRes.status}`);
+    allAdventures    = await advRes.json();
+    allPostLocations = postRes.ok ? await postRes.json() : [];
     const loadEl = $('advLoading');
     if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
     adventuresLoaded = true;
@@ -75,7 +77,8 @@ function renderAll() {
 
   // Filter
   let filtered = allAdventures.filter(a => {
-    if (activeType !== 'all' && a.type !== activeType) return false;
+    if (activeType !== 'all' && activeType !== 'country' && a.type !== activeType) return false;
+    if (activeType === 'country') return false; // countries are derived, not a type
     if (query) {
       const haystack = [a.name, a.location_city, a.location_country, a.cuisine, a.notes, ...(a.tags || [])]
         .filter(Boolean).join(' ').toLowerCase();
@@ -109,8 +112,13 @@ function renderAll() {
 
 function updateStats(data) {
   $('statRestaurants').textContent = data.filter(a => a.type === 'restaurant').length;
-  $('statPlaces').textContent       = data.filter(a => a.type === 'place').length;
-  $('statCountries').textContent    = data.filter(a => a.type === 'country').length;
+  $('statPlaces').textContent      = data.filter(a => a.type === 'place').length;
+
+  // Derive countries from unique location_country values across adventures + post_locations
+  const countrySet = new Set();
+  data.forEach(a => { if (a.location_country) countrySet.add(a.location_country.trim()); });
+  allPostLocations.forEach(p => { if (p.location_country) countrySet.add(p.location_country.trim()); });
+  $('statCountries').textContent = countrySet.size;
 }
 
 function groupAdventures(data) {
