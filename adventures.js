@@ -121,12 +121,24 @@ function updateStats(data) {
   if (elR) elR.textContent = data.filter(a => a.type === 'restaurant').length;
   if (elP) elP.textContent = data.filter(a => a.type === 'place').length;
 
-  // Derive countries from unique location_country values across adventures + post_locations
+  // Derive countries — UK nations (Scotland/England/Wales/N.Ireland) each count separately
+  const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
   const countrySet = new Set();
-  data.forEach(a => { if (a.location_country) countrySet.add(a.location_country.trim()); });
-  (allPostLocations || []).forEach(p => { if (p.location_country) countrySet.add(p.location_country.trim()); });
 
-  console.log('[updateStats] countrySet:', [...countrySet], 'size:', countrySet.size, 'elC:', elC);
+  function addCountry(region, country) {
+    if (!country) return;
+    // If region is a UK nation, count it as the country
+    if (country.trim() === 'United Kingdom' && region && UK_NATIONS.has(region.trim())) {
+      countrySet.add(region.trim());
+    } else {
+      countrySet.add(country.trim());
+    }
+  }
+
+  data.forEach(a => addCountry(a.location_region, a.location_country));
+  (allPostLocations || []).forEach(p => addCountry(p.location_region, p.location_country));
+
+  console.log('[updateStats] countrySet:', [...countrySet], 'size:', countrySet.size);
   if (elC) elC.textContent = countrySet.size;
 }
 
