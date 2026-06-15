@@ -2533,18 +2533,26 @@ const _origAdvSave = window.advSave || advSave;
 async function advSaveWithUpload() {
   // Upload any queued images first
   if (advImages.length) {
+    const pat = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+    if (!pat) {
+      showStatus('✗ No GitHub token — sign out and sign back in to upload photos.', true);
+      return;
+    }
     showStatus('Uploading photos…', false);
     const uploaded = await uploadAdvImages();
-    // Append uploaded URLs to the pasted textarea
+    if (uploaded.length === 0) {
+      showStatus('✗ Photo upload failed (401) — your GitHub token is expired. Sign out and sign back in with a new token from github.com/settings/tokens', true);
+      return;
+    }
+    // Append uploaded URLs to the pasted textarea so advSave picks them up
     const textarea = document.getElementById('advPhotos');
-    if (textarea && uploaded.length) {
+    if (textarea) {
       const existing = textarea.value.trim();
       textarea.value = (existing ? existing + '\n' : '') + uploaded.join('\n');
     }
     advImages = [];
     renderAdvImageList();
   }
-  // Also inject youtube_videos into payload via global
   await advSave();
 }
 
